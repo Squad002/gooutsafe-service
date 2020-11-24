@@ -85,6 +85,7 @@ def test_create_restaurant(client, db):
     helpers.login_operator(client)
     res = helpers.create_restaurant(client)
 
+
     fetched_restaurant = (
         db.session.query(Restaurant).filter_by(id=1, operator_id=1).first()
     )

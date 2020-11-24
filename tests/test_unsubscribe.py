@@ -5,6 +5,8 @@ from flask import session
 from .fixtures import app, client, db
 from . import helpers
 from monolith.models import User
+from monolith.api.users import delete_user
+from monolith.api.operators import delete_operator
 
 
 def test_unsubscribe_view_is_available(client):
@@ -16,31 +18,16 @@ def test_unsubscribe_view_is_available(client):
 
 def test_user_has_been_deleted_should_be_true(client, db):
     helpers.create_user(client)
-    helpers.login_user(client)
 
-    res = helpers.unsubscribe(client)
+    assert delete_user(1)
 
-    assert res.status_code == 302
-
-    res = helpers.login_user(client)
-    
-    assert res.status_code == 404
 
 
 def test_operator_has_been_deleted_should_be_true(client, db):
 
     helpers.create_operator(client)
-    helpers.login_operator(client)
 
-    helpers.unsubscribe(client)
-
-    user = (
-        db.session.query(Operator)
-        .filter(Operator.email == "deleted@deleted.it")
-        .first()
-    )
-
-    assert user.firstname == "deleted"
+    assert delete_operator(1)
 
 
 def test_marked_user_cannot_be_deleted_should_be_true(client, db):

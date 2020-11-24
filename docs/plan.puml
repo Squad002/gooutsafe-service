@@ -1,0 +1,41 @@
+@startuml
+left to right direction
+'top to bottom direction
+
+
+[Gooutsafe] <<frontend>> as f
+
+[Tasks] <<celery>> as c
+[Elasticsearch] as e
+
+[User] <<service>> as us
+[Booking] <<service>> as bs
+[Restaurant] <<service>> as rs
+
+
+database "User DB" as usdb
+database "Booking DB" as bsdb
+database "Restaurant DB" as rsdb
+
+f --> us
+f --> bs
+f --> rs
+
+us ---> usdb
+bs ---> bsdb
+rs ---> rsdb
+
+us -l-> bs : /bookings
+
+us -> c : mail
+rs -> e : index 
+c -> rs: average rating
+
+Redis -up- c
+
+skinparam component {
+    backgroundColor<<frontend>> Orange
+    backgroundColor<<service>> LightGreen
+}
+skinparam databaseBackgroundColor LightBlue
+@enduml

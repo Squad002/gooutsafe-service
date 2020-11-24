@@ -1,0 +1,76 @@
+@startuml
+left to right direction
+
+' Entities
+
+'1.3, 1.4
+entity restaurant {
+  *e1_id : number <<generated>>
+  --
+  *phonenumber : number
+  description : text
+  opening hours : time-intervals[]
+  cuisine type : enum[]
+  photos : strings[]
+  covid_safety_measures : enum[]
+  OTHERS? #TODO
+}
+
+
+'1.3
+entity menu {
+    
+}
+
+'1.3
+entity food {
+
+}
+
+entity table {
+    *seats: number
+}
+
+entity customer {
+  *e1_id : number <<generated>>
+}
+
+'1.5 # TODO it actually says that the customer can book a table
+'given the fact that there is no map, it makes sense to just
+'let the user do the reservation and do not pick the table
+entity bookings {
+    *e1_id : number <<generated>>
+    --
+    created: datetime
+    reservation: datetime
+    people: number
+}
+
+entity health_authority {
+    
+}
+
+entity covid19_mark {
+
+}
+
+' Relationship
+
+restaurant ||--o{ menu
+
+menu ||--|{ food
+
+restaurant ||--|{ table
+
+' 1.1
+operator ||--o{ restaurant 
+
+customer ||--o{ bookings
+bookings }o--|| restaurant
+
+'1.6
+health_authority ||--o{ covid19_mark
+covid19_mark |o--|{ customer
+
+
+@enduml

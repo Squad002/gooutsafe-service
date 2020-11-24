@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+
+{% block main %}
+<h1>Book table</h1>
+<form method="POST" action="">
+   <dl>
+        <h3 class="ui header">
+            <i class="calendar outline icon"></i>
+            <div class="content">
+                {{ form.booking_date.label }}
+            </div>
+        </h3>
+        <dd>{{ form.booking_date }}</dd>
+
+        <h3 class="ui header">
+            <i class="clock outline icon"></i>
+            <div class="content">
+                Booking hour
+            </div>
+        </h3>
+        <dd>
+            <select name="booking_hour">
+                {% for i in hours_list %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+        </dd>
+
+        <h3 class="ui header">
+            <i class="users icon"></i>
+            <div class="content">
+                People number
+            </div>
+        </h3>
+        <dd>
+            <select name="number_persons">
+                {% for i in range(1,max_table_seats+1) %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+        </dd>
+    </dl>
+    <input type=submit value="Submit" class="ui button primary">
+</form>
+{% endblock %}

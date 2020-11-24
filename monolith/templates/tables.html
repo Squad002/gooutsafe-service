@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Tables{% endblock %}
+
+{% block main %}
+
+<html>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+    
+    <script>
+
+      $(document).ready(function() {
+        var t = $('#example').DataTable( {
+          "columnDefs": [
+            { "orderable": false, "targets": [2, 3]},
+            { "width": "80%", "targets": 0 },
+            { "width": "30%", "targets": 1 }
+          ]
+        } );
+      } );
+    </script>
+  </head>
+
+  <body>
+      <form method="POST" id="my_form"></form>
+      <table id="example" class="display" style="width:100%">
+          <thead>
+            <tr>
+              <th align="center">Table name</th>
+              <th align="center">Seats</th>
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+              {% for table in tables %}
+                <tr>
+                    <td align="center">{{table.name}}</td>
+                    <td align="center">{{table.seats}}</td>
+                    <td>
+                        <a href="/restaurants/{{ table.restaurant_id }}/tables/edit/{{ table.id }}">
+                            <button>
+                                Edit table
+                            </button>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="/restaurants/{{ table.restaurant_id }}/tables/delete/{{ table.id }}">
+                            <button>
+                                Delete table
+                            </button>
+                        </a>
+                    </td>
+                </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+ </body>
+</html>
+
+{% endblock %}

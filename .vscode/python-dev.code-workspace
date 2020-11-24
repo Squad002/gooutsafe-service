@@ -1,0 +1,26 @@
+{
+	"folders": [
+		{
+			"path": "../"
+		}
+	],
+	"settings": {
+		"editor.formatOnSave": true,
+		"cSpell.words": [
+			"covid",
+			"firstname",
+			"gooutsafe",
+			"pytest",
+			"sqlite",
+			"srggrs",
+			"werkzeug",
+			"wtforms"
+		],
+		"python.testing.pytestArgs": [
+			"monolith"
+		],
+		"python.testing.unittestEnabled": false,
+		"python.testing.nosetestsEnabled": false,
+		"python.testing.pytestEnabled": true
+	},
+}

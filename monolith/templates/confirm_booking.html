@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block main %}
+<form method="POST" action="">
+    <dl>
+        <h2>Number of people for the booking</h2>
+        <h5>Enter the data of the other people who will eat with you, your data has already been entered</h5><br />
+
+        {% from "_formhelpers.html" import render_field %}
+
+        {% for field_entry in form.people %}
+        <h4></h4>
+        <h4 class="ui header">
+            <i class="user icon"></i>
+            <div class="content">
+                Person {{loop.index}}
+            </div>
+        </h4>
+        {{ render_field(field_entry.email) }}
+        {{ render_field(field_entry.firstname) }}
+        {{ render_field(field_entry.lastname) }}
+        {{ render_field(field_entry.fiscalcode) }}
+        {% endfor %}
+
+
+        <br /><input type=submit value="Submit" class="ui button primary">
+
+    </dl>
+</form>
+{% endblock %}

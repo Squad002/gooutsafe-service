@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+
+
+{% block main %}
+<h2 class="ui header">
+    <div class="content">
+        Check-in
+    </div>
+</h2>
+<form method="POST" action="">
+    {% for user in user_list %}
+    {%if user[1] == None%} <!-- If is not marked-->
+        {% if not checkin %}
+            <input type="checkbox" name='people' value="{{user[0].id}}">
+        {% endif %}
+        <label for="{{user[0].id}}">{{user[0].firstname}} {{user[0].lastname}} {{user[0].email}}</label><br/>
+        {%else%}
+            <label for="{{user[0].id}}" style="color:red">{{user[0].firstname}} {{user[0].lastname}} {{user[0].email}}</label><br/>
+        {% endif %}
+
+    {% endfor %}
+    {% if confirmed_booking == True %}
+        {% if not checkin %}
+            <br/><input type=submit value="Submit" class="ui button primary">
+        {% else %}
+            <h3><u>Check-in done</u></h3>
+        {% endif %}
+    {% else %}
+        <h3><u>Booking not confirmed</u></h3>
+    {% endif %}
+
+</form>
+{% endblock %}

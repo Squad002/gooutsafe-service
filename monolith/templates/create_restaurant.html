@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Create restaurant{% endblock %}
+
+{% block main %}
+
+<form method="POST" class="ui form">
+    {{ form.hidden_tag() }}
+    {% for field in form.display %}
+    <div class="field">
+        <label>{{ form[field].label }}</label>
+        {{ form[field](style="list-style: none;") }}
+    </div>
+    {% if form[field].errors %}
+    {% for e in form[field].errors %}
+    <p class="help-block">{{ e }}</p>
+    {% endfor %}
+    {% endif %}
+    {% endfor %}
+    <input type=submit id="submit" value="Submit" class="ui button primary">
+</form>
+
+{% endblock %}

@@ -1,0 +1,11 @@
+# Add/remove 'customer' label if issue contains the words
+customer:
+  - "(customer|Customer|CUSTOMER)"
+
+# Add/remove 'operator' label if issue contains the words
+operator:
+  - "(operator|Operator|OPERATOR)"
+
+# Add/remove 'health authority' label if issue contains the words
+health authority:
+  - "(health authority|Health Authority|HEALTH AUTHORITY)"

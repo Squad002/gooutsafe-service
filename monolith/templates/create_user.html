@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+
+{% block main %}
+<form action="" method="POST" class="ui form">
+    {{ form.hidden_tag() }}
+    {% for field in form.display %}
+    <div class="field">
+        <label>{{ form[field].label }}</label>
+        {{ form[field]() }}
+    </div>
+    {% if form[field].errors %}
+    {% for e in form[field].errors %}
+    <p class="help-block">{{ e }}</p>
+    {% endfor %}
+    {% endif %}
+    {% endfor %}
+    <p>
+        <input type=submit value="Submit" class="ui button primary">
+</form>
+{% endblock %}

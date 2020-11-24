@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% block title %}Restaurant profile{% endblock %}
+
+{% block main %}
+<h1>{{ name }}</h1>
+
+<div class="ui one column centered grid">
+    <div class="ui fotorama" data-allowfullscreen="native" data-width="500" data-height="400">
+        {% for image in file_names%}
+        <img class="ui image" src="/static/uploads/{{id}}/{{image}}" loading="lazy">
+        {% endfor%}
+    </div>
+</div>
+
+{% if session["role"] != "authority" %}
+<h3 class="ui dividing header">
+    <i class="tasks icon"></i>
+    <div class="content">
+        Actions
+    </div>
+</h3>
+<!-- User view and anonymous user view -->
+{% if session["role"] != "operator" %}
+<a href="{{base_url}}/booking" class="positive ui button">Book a table!</a>
+{% endif %}
+
+<!-- Owner Operator view -->
+{% if session['role'] == 'operator' and current_user.id == operator_id %}
+<div class="ui row">
+    <a href="{{base_url}}/reservations" class="positive ui button">
+        <i class="user icon"></i>
+        See reservations</a>
+    <a href="/restaurants/{{id}}/tables" class="ui positive button">
+        <i class="clone icon"></i>
+        See tables
+    </a>
+</div>
+
+<div class="ui divider hidden"></div>
+
+<div class="ui row"></div>
+<a href="/restaurants/{{id}}/menus/new" class="ui primary button">
+    <i class="plus icon"></i>
+    Add a menu
+</a>
+<a href="/restaurants/{{id}}/tables/new" class="ui primary button">
+    <i class="plus icon"></i>
+    Add new table
+</a>
+<a href="/restaurants/{{ id }}/upload" class="ui primary button">
+    <i class="camera icon"></i>
+    Upload photos
+</a>
+</div>
+{% endif %}
+{% endif %}
+
+<h3 class="ui dividing header">
+    <i class="info circle icon"></i>
+    <div class="content">
+        Info
+    </div>
+</h3>
+
+<div class="ui list">
+    <div class="item">
+        <i class="star icon"></i>
+        <div class="content">
+            {{ average_rating }}
+        </div>
+    </div>
+
+    <div class="item">
+        <i class="phone icon"></i>
+        <div class="content">
+            Phone: {{ phonenumber }}
+        </div>
+    </div>
+
+    <div class="ui item">
+        <i class="clock outline icon"></i>
+        <div class="content">
+            Opening hours: {{ open }} - {{ close}}
+        </div>
+    </div>
+
+
+    <div class="ui item">
+        <i class="flag outline icon"></i>
+        <div class="content">
+            Cuisine type: {{ cuisine }}
+        </div>
+    </div>
+
+    <div class="ui divider hidden"></div>
+
+    <section>
+        <h3 class="ui dividing header">
+            <i class="heart outline icon"></i>
+            <div class="content">
+                Covid-19 Precautions
+            </div>
+        </h3>
+        <ul>
+            {% for precaution in precautions %}
+            <a class="ui primary label">{{ precaution }}</a>
+            {% endfor %}
+        </ul>
+        <div class="ui hidden divider"></div>
+    </section>
+
+    <section>
+        <h3 class="ui dividing header">
+            <i class="book icon"></i>
+            <div class="content">
+                Menus
+            </div>
+        </h3>
+        <ul>
+            <div class="ui blue labels">
+                {% for menu in menus: %}
+                <a class="ui label" href="{{base_url}}/menus/show/{{menu.id}}">{{menu.name}}</a>
+                {% endfor %}
+            </div>
+        </ul>
+    </section>
+
+
+    <div class="ui hidden divider"></div>
+
+    <h3 class="ui dividing header">
+        <i class="map signs icon"></i>
+        <div class="content">
+            Map
+        </div>
+    </h3>
+    <div class="ui one column centered grid">
+        <div class="row">
+            <iframe width="600" height="400" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"
+                src="https://www.openstreetmap.org/export/embed.html?bbox={{ lon - 0.001 }}%2C{{ lat - 0.001 }}%2C{{ lon + 0.001 }}%2C{{ lat + 0.001 }}&amp;layer=mapnik&amp;marker={{ lat }}%2C{{ lon }}"
+                style="border: 0px solid black"></iframe>
+        </div>
+        <small><a href="https://www.openstreetmap.org/#map=17/{{ lat }}/{{ lon }}">See it Larger</a></small>
+    </div>
+    <div class="ui hidden divider"></div>
+
+    <article>
+        <h3 class="ui dividing header">
+            <i class="star icon"></i>
+            <div class="content">
+                Reviews
+            </div>
+        </h3>
+        {% if not reviews %}
+        <h2 class="ui icon header center aligned disabled">
+            <i class="comments icon"></i>
+            <div class="ui tiny header">No reviews yet</div>
+        </h2>
+</div>
+{% endif %}
+{% for review in reviews %}
+<section>
+    <div class="ui medium comments">
+        <div class="comment">
+            <a class="avatar">
+                <img loading="lazy" src={{ review.user.get_avatar_link() }}>
+            </a>
+            <div class="content">
+                <div class="author">{{ review.user.firstname }}</div>
+                <div class="metadata">
+                    <div class="date">{{ review.created.strftime("%d %B %Y") }}</div>
+                    <div class="rating">
+                        <i class="star icon"></i>
+                        {{ review.rating }}
+                    </div>
+                </div>
+                <div class="text">
+                    {{ review.message }}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endfor %}
+<div class="ui hidden section divider"></div>
+
+{% if session["role"] != "operator" and session["role"] != "authority" %}
+<section>
+    <form class="ui form" method="POST">
+        <h3 class="ui header">Add your review</h3>
+        {{ form.hidden_tag() }}
+        {% for field in form.display %}
+        <div class="field">
+            <label>{{ form[field].label }}</label>
+            {{ form[field]() }}
+        </div>
+        {% if form[field].errors %}
+        {% for e in form[field].errors %}
+        <p class="help-block">{{ e }}</p>
+        {% endfor %}
+        {% endif %}
+        {% endfor %}
+        <button class="ui button primary labeled icon button" type="submit"><i class="icon edit"></i> Add
+            Review</button>
+    </form>
+</section>
+{% endif %}
+{% endblock %}

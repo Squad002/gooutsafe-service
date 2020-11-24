@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+    function createMap(restaurants) {
+        //console.log(restaurants[0])
+        //console.log(restaurants[0]["lat"], restaurants[0]["lon"])
+        var map = L.map('map').setView([restaurants[0]["lat"], restaurants[0]["lon"]], 13);
+        //const restaurants_json = JSON.parse(restaurants)
+
+        // load a tile layer
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 17,
+                minZoom: 4
+            }).addTo(map);
+        restaurants.forEach(restaurant => {
+            var marker = L.marker([restaurant["lat"], restaurant["lon"]]);
+            let link = '<a href="' + {{ url_for("restaurants._restaurants")
+                | tojson
+        }} + '/' + restaurant[4] + '"> Restaurant Details </a>'
+    marker.bindPopup(link).openPopup();
+    marker.bindTooltip(restaurant["name"])
+    marker.addTo(map)
+
+        });
+    }
+</script>
+{% endblock%}
+{% block title %}Index{% endblock %}
+
+{% block main %}
+<h1>GoOutSafe</h1>
+
+{% if current_user.is_authenticated and session['role'] == "user" %}
+Hi {{ current_user.firstname }}!
+
+<div class="ui divider"></div>
+
+<div class="row">
+    <h2 class="ui dividing header">Restaurants</h2>
+    <div class="row">
+        <a href="/restaurants" class="ui primary button">
+            <i class="utensil spoon icon"></i>
+            See restaurants list
+        </a>
+    </div><br />
+</div>
+
+{% elif current_user.is_authenticated and session['role'] == "operator" %}
+Hi {{ current_user.firstname }}!
+<div class="ui divider hidden"></div>
+
+<div class="row">
+    <h2 class="ui dividing header">Restaurants</h2>
+    <div class="row">
+        <a href="/restaurants" class="ui primary button">
+            <i class="utensil spoon icon"></i>
+            See restaurants list
+        </a>
+        <a href="/restaurants/map" class="ui primary button">
+            <i class="map icon"></i>
+            Map of our restaurants
+        </a>
+    </div><br />
+
+    {% elif current_user.is_authenticated and session['role'] == "authority" %}
+    Hi {{ current_user.firstname }}!
+    In the menu you have the button to mark users as positive.
+</div>
+
+{% else %}
+<div class="row">
+    <p>Hello Stranger! you can either <a href="/login/user">Log in</a> or <a href="/register/user">Sign Up</a></p>
+    {{ session["role"] }}
+</div>
+{% endif %}
+
+<div style="margin-top: 30px;" class="row">
+    <div class="ui four doubling stackable cards">
+        {% for restaurant in restaurants %}
+        <div class="ui link card" width="10%">
+            {% if restaurant.path is defined %}
+            <a href="{{ url_for('restaurants._restaurants') }}/{{ restaurant.id }}" class="image">
+                <img src="/static/uploads/{{ restaurant.id }}/{{ restaurant.path }}" style="height: 100px;">
+            </a>
+            {% else %}
+            <a href="{{ url_for('restaurants._restaurants') }}/{{ restaurant.id }}" class="image">
+                <img src="https://www.repstatic.it/content/nazionale/img/2018/10/21/222802069-6316bf93-aa5e-4058-8f22-6bfd49e04202.jpg"
+                    style="height: 100px;">
+            </a>
+            {% endif %}
+            <div class="content">
+                <div class="description">
+                    <a href="{{ url_for('restaurants._restaurants') }}/{{ restaurant.id }} ">
+                        {{ restaurant.name }}
+                    </a>
+                </div>
+            </div>
+            <div class="extra content">
+                <span>
+                    <i class="star icon"></i>
+                    {{ restaurant.average_rating }}
+                </span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+
+<div style="margin-top: 20px;" class="row">
+    <section>
+        <h2 class="ui dividing header">See all our restaurants at a glance!</h2>
+        <p>Below you can see a map of all the restaurants registered in our app! Use it to find the ones nearest to your
+            position!</p>
+    </section>
+
+    <section>
+        <div id="map" style="height: 400px;"></div>
+        <script>
+            createMap({{ restaurants_list | tojson }})
+        </script>
+    </section>
+</div>
+
+{% endblock %}

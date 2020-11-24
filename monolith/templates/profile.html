@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Your Profile{% endblock %}
+
+{% block main %}
+<h2 class="ui dividing header">Profile information</h2>
+<p>Welcome to your profile page, {{ session["name"] }}! Below you can check and modify your information.</p>
+<div class="row ui list">
+    <div class="item">First Name: {{ user.firstname }}</div>
+    <div class="item">Last Name: {{ user.lastname }}</div>
+    {% if session["role"] == user %}
+    <div class="item">Phone Number: {{user.phonenumber}}</div>
+    {% endif %}
+    <div class="item">Fiscal Code: {{user.fiscalcode}}</div>
+    <div class="item">Email: {{user.email}}</div>
+</div>
+
+<div class="row">
+    <div class="ui dividing header">Modify your information</div>
+    <h3 class="row">Change password</h3>
+    <iframe id="password_iframe" src="{{ url_for('me.change_password') }} " width="400" height="300"></iframe>
+    <h3 class="row">Change anagraphic information</h3>
+    <iframe id="anagraphic_iframe" src="{{ url_for('me.change_anagraphic') }} " width="400" height="300"></iframe>
+    <h3 class="row">Change your contact information</h3>
+    <iframe id="contacts_iframe" src="{{ url_for('me.change_contacts') }} " width="400" height="300"></iframe>
+
+</div>
+</div>
+
+{% endblock %}

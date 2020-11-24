@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{{ dropzone.load_css() }}
+{% endblock %}
+{% block title %}Upload photos{% endblock %}
+
+{% block main %}
+
+{{ dropzone.create('/restaurants/' + id + '/upload') }}
+<div class="ui divider hidden"></div>
+<button class="ui button primary">Upload</button>
+{{ dropzone.load_js() }}
+{{ dropzone.config("/restaurants/" + id) }}
+
+{% endblock %}

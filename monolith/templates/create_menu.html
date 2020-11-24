@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+
+<script>
+  $(document).ready(function () {
+    var t = $('#example').DataTable({
+      "ordering": false,
+      "bFilter": false,
+      "bPaginate": false,
+      "bInfo": false,
+      "columnDefs": [
+        { "width": "35%", "targets": 0 },
+        { "width": "20%", "targets": 1 },
+        { "width": "40%", "targets": 2 },
+        { "width": "25%", "targets": 3 }
+      ]
+    });
+
+    $('#addRow').on('click', function () {
+      t.row.add([
+        '<div class="ui input"><input type="text" name="name" form="my_form" required></div>',
+        '<div class="ui input"><input type="number" step="0.50" min=0 name="price" form="my_form" required></div>',
+        '<select name="category" form="my_form"> \
+          {% for choice in choices: %} \
+            <option value="{{choice[0]}}">{{choice[1]}}</option> \
+          {% endfor %} \
+        </select>',
+        '<button class="remove negative ui button">Delete food</button>'
+      ]).draw();
+    });
+
+    // Automatically add a first row of data
+    $('#addRow').click();
+
+    $('#example').on('click', '.remove', function () {
+      t.row($(this).parents('tr')).remove().draw();
+    });
+  });
+</script>
+{% endblock %}
+
+{% block title %}Create menu{% endblock %}
+
+{% block main %}
+<form class="ui form" method="POST" id="my_form"></form>
+<table id="example" class="display" style="width:100%">
+  <thead>
+    <tr>
+      <th align="center" colspan=2>Menu name</th>
+      <td colspan=2>
+        <div class="ui input">
+          <input id="menu_name" type="text" name="menu_name" value="{{menu_name}}" form="my_form" required>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <th align="center">Food name</th>
+      <th align="center">Price</th>
+      <th align="center">Category</th>
+      <th align="center"><button class="positive ui button" id="addRow">Add food</button></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for name, price, category in items: %}
+    <tr>
+      <td align="center">
+        <div class="ui input">
+          <input type="text" name="name" form="my_form" value="{{name}}" required>
+        </div>
+      </td>
+      <td align="center">
+        <div class="ui input">
+          <input type="number" step="0.50" min=0 name="price" form="my_form" value="{{price}}" required>
+        </div>
+      </td>
+      <td align="center">
+        <select class="ui fluid dropdown" size="1" name="category" form="my_form" value={{category}}>
+          {% for choice in choices: %}
+          <option value="{{choice[0]}}">{{choice[1]}}</option>
+          {% endfor %}
+        </select>
+      </td>
+      <td align="center"><button class="remove">Delete food</button></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <th align="right" colspan="4">
+        <button class="submit ui button primary" form="my_form">Submit</button>
+      </th>
+    </tr>
+  </tfoot>
+</table>
+
+{% endblock %}

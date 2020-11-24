@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Restaurants{% endblock %}
+
+{% block main %}
+<h1>Restaurant List</h1>
+<h5>{{message}}</h5>
+<div class="row">
+  {% if session.get('role') == "operator" %}
+  {% if operator_restaurants == True%}
+  <a href="/restaurants" class="ui primary button">
+    See restaurants list
+  </a>
+  {% else %}
+  <a href="/restaurants/mine" class="ui primary button">
+    See your restaurants
+  </a>
+  {% endif %}
+  <a href="/restaurants/new" class="positive ui button">Register a new restaurant</a>
+  {% endif %}
+  <a href="/restaurants/map" class="ui primary button">
+    <i class="map icon"></i>
+    Map of restaurants
+  </a>
+</div>
+
+<div class="ui divider"></div>
+
+
+<div style="margin-top: 30px;" class="row">
+  {% if restaurants %}
+  <div class="ui four doubling stackable cards">
+    {% for restaurant in restaurants %}
+    <div class="ui link card" width="10%">
+      {% if restaurant.path is defined %}
+      <a href="{{ url_for('restaurants._restaurants') }}/{{ restaurant.id }}" class="image">
+        <img src="/static/uploads/{{ restaurant.id }}/{{ restaurant.path }}" style="height: 100px;">
+      </a>
+      {% else %}
+      <a href="{{ url_for('restaurants._restaurants') }}/{{ restaurant.id }}" class="image">
+        <img
+          src="https://www.repstatic.it/content/nazionale/img/2018/10/21/222802069-6316bf93-aa5e-4058-8f22-6bfd49e04202.jpg"
+          style="height: 100px;">
+      </a>
+      {% endif %}
+      <div class="content">
+        <div class="description">
+          <a href="{{ url_for('restaurants._restaurants') }}/{{ restaurant.id }} ">
+            {{ restaurant.name }}
+          </a>
+        </div>
+      </div>
+      <div class="extra content">
+        <span>
+          <i class="star icon"></i>
+          {{ restaurant.average_rating }}
+        </span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <h2 class="ui icon header center aligned disabled">
+    <i class="user secret icon"></i>
+    <div class="ui tiny header">Our secret agents could not find anything</div>
+  </h2>
+  {% endif %}
+</div>
+{% endblock %}

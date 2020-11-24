@@ -1,0 +1,48 @@
+# This is used for https://github.com/di-unipi-socc/microFreshener
+tosca_definitions_version: micro_tosca_yaml_1.1
+description: GoOutSafe
+imports:
+  - micro: https://di-unipi-socc.github.io/microTOSCA/1.1/microTOSCA.yaml
+topology_template:
+  node_templates:
+    User:
+      type: micro.nodes.Service
+      requirements:
+        - interaction: user-db
+        - interaction: Tasks
+    Booking:
+      type: micro.nodes.Service
+      requirements:
+        - interaction: booking-db
+    Restaurant:
+      type: micro.nodes.Service
+      requirements:
+        - interaction: restaurant-db
+        - interaction: Elasticsearch
+    GoOutSafe WebUI:
+      type: micro.nodes.Service
+      requirements:
+        - interaction: User
+        - interaction: Restaurant
+        - interaction: Booking
+    Tasks:
+      type: micro.nodes.Service
+      requirements:
+        - interaction: Restaurant
+        - interaction: redis-db
+    Elasticsearch:
+      type: micro.nodes.Service
+    user-db:
+      type: micro.nodes.Datastore
+    restaurant-db:
+      type: micro.nodes.Datastore
+    booking-db:
+      type: micro.nodes.Datastore
+    redis-db:
+      type: micro.nodes.Datastore
+  groups:
+    edgenodes:
+      type: micro.groups.Edge
+      members:
+        - GoOutSafe WebUI
+  relationship_templates:

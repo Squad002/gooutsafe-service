@@ -1,0 +1,43 @@
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - GoOutSafe</title>
+    {% block head %}{% endblock %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/semantic.min.css') }}">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!--<link rel="stylesheet" href="https://igoradamenko.github.io/awsm.css/css/awsm_theme_mischka.css">-->
+    <!--<link rel="stylesheet" href="https://unpkg.com/mvp.css">-->
+    <!--<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/picnic">-->
+    <!--<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">-->
+
+</head>
+
+{% block main %}
+<div class="ui container">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul class=flashes>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+    <form action="" method="POST" class="ui form">
+        {{ form.hidden_tag() }}
+        {% for field in form.display %}
+        <div class="field">
+            <label>{{ form[field].label }}</label>
+            {{ form[field]() }}
+        </div>
+        {% if form[field].errors %}
+        {% for e in form[field].errors %}
+        <p class="help-block">{{ e }}</p>
+        {% endfor %}
+        {% endif %}
+        {% endfor %}
+        <p>
+            <input type=submit value="Submit" class="ui button primary">
+    </form>
+</div>
+{% endblock %}

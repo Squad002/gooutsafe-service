@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    {% block head %}
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - GoOutSafe</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css"
+        integrity="sha512-8bHTC73gkZ7rZ7vpqUQThUDhqcNFyYi2xgDgPDHc+GXVGHXq+xPjynxIopALmOPqzo9JZj0k6OqqewdGO3EsrQ=="
+        crossorigin="anonymous" />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!-- jQuery 1.8 or later, 33 KB -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+    <!-- Fotorama from CDNJS, 19 KB -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/fotorama/4.6.4/fotorama.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fotorama/4.6.4/fotorama.js"></script>
+    {% endblock %}
+    <style>
+        .fotorama__wrap {
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body style="margin-bottom:50px">
+    <header>
+        <div class="ui centered grid">
+            <div class="row"></div>
+            <div class="row">
+                <div class="ui container"><a href="/" title="Home Page"><img width=10%
+                            src="{{ url_for('static', filename='assets/logo.png') }}" alt="Go Out Safe"></a></div>
+            </div>
+            <div class="row">
+                <div class="ui menu center primary">
+                    <a href="/" class="item" title="Home Page">Home</a>
+                    <form method="GET" action="{{ url_for('restaurants._restaurants') }}">
+                        <div class="item">
+                            <div class="ui inverted icon input">
+                                <i class="search icon"></i>
+                                {% if session.get('previous_search') %}
+                                <input id="search" name="q" type="prompt" placeholder="Search"
+                                    value="{{ session.get('previous_search') }}">
+                                {% else %}
+                                <input id="search" name="q" type="prompt" placeholder="Search">
+                                {% endif %}
+                            </div>
+                        </div>
+                    </form>
+                    <div class="right menu">
+                        {% if not (current_user.is_authenticated and current_user.is_active) %}
+                        <a href="/login/user" class="item">Login</a>
+                        {% else %}
+                        {% if session["role"] == "user" or "operator" %}
+                        <a href="/me" class="item">{{ session["name"] }}</a>
+                        {% else %}
+                        {{ session["name"] }}
+                        {% endif %}
+                        {% if session["role"] == 'user' %}
+                        <a href="/bookings" class="item">Booking</a>
+                        {% endif %}
+                        {% if session["role"] == 'authority' %}
+                        <a href="/marks/new" class="item">Mark<div class="ui red horizontal empty circular label"></div>
+                        </a>
+                        <a href="/trace" class="item">Trace<div class="ui red horizontal empty circular label"></div>
+                        </a>
+                        {% endif %}
+                        <a href="/logout" class="item">Logout</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+        </div>
+    </header>
+    <main>
+        <section style="margin-top:30px; margin-bottom:0px" class="ui text container">
+            <!--ADD css to close the message-->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            {% if category == "success" %}
+            <div id="popup" class="ui success message close transition" onclick="closePopup()">
+                <i class=" close icon"></i>
+                <div class="header">
+                    Success!
+                </div>
+                <ul class="list">
+                    <li>{{ message }}</li>
+                </ul>
+            </div>
+            {% elif category == "info" %}
+            <div id="popup" class="ui info message close transition" onclick="closePopup()">
+                <i class=" close icon"></i>
+                <div class="header">
+                    Info
+                </div>
+                <ul class="list">
+                    <li>{{ message }}</li>
+                </ul>
+            </div>
+            {% else %}
+            <div id="popup" class="ui error message close transition" onclick="closePopup()">
+                <i class="close icon"></i>
+                <div class="header">
+                    There were some errors with your submission
+                </div>
+                <ul class="list">
+                    <li>{{ message }}</li>
+                </ul>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </section>
+        {% block before_main %}{% endblock %}
+        <section class="ui text container">
+            {% block main %}{% endblock %}
+        </section>
+        <div class="ui divider hidden"></div>
+    </main>
+    <!--<footer class="ui inverted vertical footer segment">
+        <div class="ui container">
+            Copyright 2020
+        </div>
+    </footer>-->
+</body>
+
+<script>
+    function closePopup() {
+        let messagePopup = document.getElementById("popup");
+        messagePopup.style.display = "none";
+    }
+</script>
+
+</html>

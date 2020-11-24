@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Trace Contacts{% endblock %}
+
+{% block main %}
+
+<section>
+    <h2 class="ui header">Trace contacts by using an identifier</h2>
+    <form action="" method="POST" class="ui form">
+        {{ form.hidden_tag() }}
+        {% for field in form.display %}
+        <div class="field">
+            <label>{{ form[field].label }}</label>
+            {{ form[field]() }}
+        </div>
+        {% if form[field].errors %}
+        {% for e in form[field].errors %}
+        <p class="help-block">{{ e }}</p>
+        {% endfor %}
+        {% endif %}
+        {% endfor %}
+        <p>
+            <input type=submit value="Trace" class="ui button primary">
+    </form>
+
+
+    <script src="https://semantic-ui.com/javascript/library/tablesort.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('table').tablesort()
+        });
+    </script>
+
+    {% if contacts %}
+    <h1 class="ui header">Traced contacts</h1>
+    <table class="ui selectable basic sortable table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Name</th>
+                <th>SSN</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Marked</th>
+                <th>Mark</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for contact in contacts %}
+            {% for person in contact.people %}
+            <tr>
+                <td>{{ contact.date }}</td>
+                <td>{{ person.firstname }} {{ person.lastname }}</td>
+                <td>{{ person.fiscalcode }}</td>
+                <td>{{ person.email }}</td>
+                <td>{{ person.phonenumber }}</td>
+                {% if person.is_marked() %}
+                <td class="error"><i class="attention icon"></i>Yes</td>
+                <td class="disabled">
+                    <div class="ui small primary disabled button icon">
+                        <i class="icon checkmark"></i>
+                    </div>
+                </td>
+                {% else %}
+                <td>No</td>
+                <td>
+                    <form method="POST" action="/marks/new">
+                        <button class="ui small primary button icon" name="identification" value="{{ person.email }}">
+                            <i class="icon checkmark"></i>
+                        </button>
+                    </form>
+                </td>
+                {% endif %}
+                <td></td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</section>
+
+{% endblock %}

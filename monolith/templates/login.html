@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block main %}
+<h3>{{ title }}</h3>
+
+
+<form action="" method="POST" class="ui form">
+    {{ form.hidden_tag() }}
+    {% for field in form.display %}
+    <div class="field">
+        <label>{{ form[field].label }}</label>
+        {{ form[field]() }}
+    </div>
+    {% if form[field].errors %}
+    {% for e in form[field].errors %}
+    <p class="help-block">{{ e }}</p>
+    {% endfor %}
+    {% endif %}
+    {% endfor %}
+    <p>
+        <input type=submit value="Submit" class="ui button primary">
+</form>
+
+<!--TODO only show the links that are needed. If am on /login hide the first one-->
+{% if title != "User Login" %}
+<h5><a href="/login/user">Login as an User</a></h5>
+{% endif %}
+{% if title != "Operator Login" %}
+<h5><a href="/login/operator">Login as an Operator</a></h5>
+{% endif %}
+{% if title != "Authority Login" %}
+<h5><a href="/login/authority">Login as an Health Authority</a></h5>
+{% endif %}
+
+{% if title == "User Login" %}
+<h5><a href="/register/user">User Sign Up</a></h5>
+{% elif title == "Operator Login" %}
+<h5><a href="/register/operator">Operator Sign Up</a></h5>
+{% elif title == "Authority Login" %}
+<h5><a href="/register/authority">Authority Sign Up</a></h5>
+{% endif %}
+
+{% endblock %}

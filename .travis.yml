@@ -1,0 +1,8 @@
+language: python
+python: 3.8.5
+install:
+  - pip install -r requirements/testing.txt
+script:
+  - pytest --workers auto --cov monolith
+after_success:
+  - coveralls

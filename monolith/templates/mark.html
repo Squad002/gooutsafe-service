@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Mark user{% endblock %}
+
+{% block main %}
+
+<section>
+    <h2 class="ui header">Mark by using an identifier</h2>
+    <form action="" method="POST" class="ui form">
+        {{ form.hidden_tag() }}
+        {% for field in form.display %}
+        <div class="field">
+            <label>{{ form[field].label }}</label>
+            {{ form[field]() }}
+        </div>
+        {% if form[field].errors %}
+        {% for e in form[field].errors %}
+        <p class="help-block">{{ e }}</p>
+        {% endfor %}
+        {% endif %}
+        {% endfor %}
+        <p>
+            <input type=submit value="Mark" class="ui button primary">
+    </form>
+</section>
+
+{% endblock %}

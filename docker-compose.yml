@@ -1,0 +1,93 @@
+version: "3.4"
+
+services:
+  gooutsafe:
+    image: gooutsafe-service:latest
+    deploy:
+      restart_policy:
+        condition: on-failure
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    depends_on:
+      - database
+      - redis
+    ports:
+      - 5000:5000
+    env_file:
+      - .env.docker
+    volumes:
+      - type: bind
+        source: ./monolith/
+        target: /home/gooutsafe/monolith/
+
+  # SERVICES
+
+  user-service:
+    image: user-service:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    depends_on:
+      - user-service-db
+    expose:
+      - "5000"
+    environment:
+      - DATABASE_URI=mysql+pymysql://gooutsafe:my-secret-pw@user-service-db/gooutsafe
+
+  # THIRD-PARTY SERVICES
+
+  # elastic-search:
+  #   image: "docker.elastic.co/elasticsearch/elasticsearch:7.10.0"
+  #   deploy:
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 5s
+  #   environment:
+  #     - "discovery.type=single-node"
+  #   expose:
+  #     - "9200"
+  #     - "9300"
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:9200"]
+
+  redis:
+    image: "redis:6.0.8-alpine"
+    deploy:
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "6379:6379"
+
+  # DATABASES
+
+  database:
+    image: "mysql:8"
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: --default-authentication-plugin=mysql_native_password
+    expose:
+      - "3306"
+    volumes:
+      - database-data:/var/lib/mysql
+    env_file:
+      - .env.docker
+
+  user-service-db:
+    image: "mysql:8"
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: --default-authentication-plugin=mysql_native_password
+    expose:
+      - "3306"
+    volumes:
+      - user-service-data:/var/lib/mysql
+    env_file:
+      - .env.docker
+
+volumes:
+  database-data:
+  user-service-data:

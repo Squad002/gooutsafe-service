@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+
+{% block main %}
+<style>
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: center;
+      padding: 8px;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+    </style>
+
+    <h3 class="ui header">
+      <i class="calendar outline icon"></i>
+      <div class="content">
+          Choose date
+      </div>
+    </h3>
+    <form method="POST" action="">
+      <dd>{{ form.date }}</dd><br/>
+      <dd>{{ form.submit }}</dd>
+    </form>
+
+    <h3 class="ui header">
+      <i class="calendar check outline icon"></i>
+      <div class="content">
+        Booking: {{date}}
+      </div>
+    </h3>
+    <table>
+        <tr>
+            <th>Reservation id</th>
+            <th>Table</th>
+            <th>People number</th>
+            <th>Date</th>
+            <th>Details</th>
+            <th>Delete</th>
+        </tr>
+        {% if booking_list|length == 0 %}
+          <tr>
+            <td colspan="6">No reservations</td>
+          </tr>
+        {%else%}
+          {% for book in booking_list %}
+            <tr>
+                <td>{{book[0].booking_number}}</td>
+                <td>{{book[1].name}}</td>
+                <td>{{book[2]}}</td>
+                {% set date_hour = (book[0].start_booking) | string%}
+                {% set hour = date_hour.split(' ')[1]%}
+                <td>{{hour[:-3]}}</td>  <!-- print only HH:MM -->
+                <td>
+                  <form action="{{base_url}}/{{book[0].booking_number}}">
+                    <button>
+                        More details
+                    </button>
+                  </form>
+                </td>
+                <td>
+                  <form action="{{base_url}}/delete/{{book[0].booking_number}}">
+                    <button>
+                        Remove
+                    </button>
+                  </form>
+                </td>
+            </tr>
+          {% endfor %}
+        {% endif%}
+    </table>
+
+    <br/>
+    <h3><u>Total number of people in the restaurant</u>: {{total_people}}</h3>
+{% endblock %}

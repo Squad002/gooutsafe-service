@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+
+<script>
+  $(document).ready(function () {
+    var t = $('#example').DataTable({
+      "columnDefs": [
+        { "width": "80%", "targets": 0 },
+        { "width": "30%", "targets": 1 },
+        { "width": "60%", "targets": 2 }
+      ],
+      "language": { "search": "" },
+    });
+
+    var d = document.getElementsByTagName("input")[0];
+    var wrapper = document.createElement('div')
+    wrapper.className += " ui icon input"
+    var parent = d.parentNode;
+    parent.replaceChild(wrapper, d);
+    wrapper.appendChild(d);
+    var i = document.createElement('i');
+    i.className += " search icon"
+    wrapper.appendChild(i)
+  });
+
+  $('.dataTables_paginate').addClass('ui button');
+
+</script>
+{% endblock %}
+
+{% block title %}Menu{% endblock %}
+
+{% block main %}
+<table id="example" class="display" style="width:100%">
+  <thead>
+    <tr>
+      <th align="center">Menu name</th>
+      <td align="center" colspan=2>{{menu.name}}</td>
+    </tr>
+    <tr>
+      <th align="center">Food name</th>
+      <th align="center">Price</th>
+      <th align="center">Category</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for food in menu.foods %}
+    <tr>
+      <td align="center">{{food.name}}</td>
+      <td align="center">{{food.price}}</td>
+      <td align="center">{{food.category.value}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

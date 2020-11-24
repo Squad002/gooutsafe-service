@@ -1,0 +1,6 @@
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--workers auto --cov-report term --cov-report xml:cov.xml --cov microservice -s -v"
+testpaths = [
+    "tests",
+]

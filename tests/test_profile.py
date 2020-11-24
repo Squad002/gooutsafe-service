@@ -72,7 +72,9 @@ def test_profile_forms_are_available(client):
     assert res2.status_code == 200
     assert res3.status_code == 200
 
-
+# ! BUG
+# Questo chiama su LoginUser (che sarebbe current_user) verify_password() che non esiste più, ma bisogna eseguire il metodo
+# users.login() in cartella /api (come viene fatto sulla registrazione utente) 
 def test_password_form(client):
     helpers.create_user(client)
     helpers.login_user(client)
@@ -121,6 +123,7 @@ def test_anagraphic_form_user(client):
     assert res.status_code == 200
 
     res = client.get("/me")
+    print(res.data)
     assert b"Hattori" in res.data
     assert b"Hanzo" in res.data
     assert b"HTTHNZ45B02D612A" in res.data
@@ -136,6 +139,7 @@ def test_anagraphic_form_operator(client):
             firstname="O-Ren",
             lastname="Ishii",
             fiscalcode="RNXSHX74C03D612A",
+            # TODO add patch for birthdate to user service api
             dateofbirth="1945-03-03",
             password="5678",
         ),

@@ -9,7 +9,6 @@ def test_create_operator_view_is_available(client):
     res = client.get("/register/operator")
     assert res.status_code == 200
 
-
 def test_create_operator_view(client, db):
     res = add_operator(client)
 
@@ -18,6 +17,8 @@ def test_create_operator_view(client, db):
     )
 
     assert res.status_code == 302
+    # SOLUZIONE (credo)
+    assert fetched_user["email"] == "operator@mail.com"
     assert fetched_user.email == "operator@mail.com"
     assert fetched_user.firstname == "operator"
     assert fetched_user.lastname == "operator"

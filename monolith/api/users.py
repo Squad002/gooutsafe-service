@@ -81,3 +81,11 @@ def login_user(email, password):
     )
 
     return res.json()["message"] == "Success"
+
+
+@write_request_breaker
+def patch_user(id, patch):
+    res = requests.patch(
+        f"{current_app.config['URL_API_USER']}users/{id}",
+        json=patch,
+    )

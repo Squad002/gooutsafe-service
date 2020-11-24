@@ -63,3 +63,11 @@ def login_operator(email, password):
     )
 
     return res.json()["message"] == "Success"
+
+
+@write_request_breaker
+def patch_operator(id, patch):
+    res = requests.patch(
+        f"{current_app.config['URL_API_USER']}operators/{id}",
+        json=patch,
+    )

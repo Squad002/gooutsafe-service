@@ -1,6 +1,12 @@
+from monolith.api.operators import patch_operator
+from requests.api import request
+from monolith.api.users import login_user, patch_user
+from monolith.api.operators import login_operator, patch_operator
 from flask import Blueprint, render_template, session, redirect
 from flask_login import login_required
 from flask.helpers import flash
+from datetime import datetime
+
 
 from monolith import db
 from monolith.models import User, Operator
@@ -35,9 +41,10 @@ def change_password():
     form = ChangePasswordForm()
 
     if form.validate_on_submit():
-        if current_user.verify_password(form.old_password.data):
-            current_user.password = form.new_password.data
-            flash("Operation successful!")
+        if login_user(current_user.email, form.old_password.data):
+            if(form.password_confirm.data == form.new_password.data):
+                patch_user(current_user.id, {"password": form.new_password.data})
+                flash("Operation successful!")
         else:
             flash("You've typed the wrong password!")
 
@@ -50,15 +57,20 @@ def change_anagraphic():
     form = ChangeAnagraphicForm()
 
     if form.validate_on_submit():
-        if current_user.verify_password(form.password.data):
-            current_user.firstname = form.firstname.data
-            current_user.lastname = form.lastname.data
-            current_user.dateofbirth = form.dateofbirth.data
-            current_user.fiscalcode = form.fiscalcode.data
-            db.session.commit()
-            flash("Operation successful!")
-        else:
-            flash("You've typed the wrong password!")
+        if session["role"] == "operator":
+            if login_operator(current_user.email, form.password.data):
+                # TODO add patch for birthdate to user service api
+                res = patch_operator(current_user.id, {"firstname": form.firstname.data, "lastname": form.lastname.data, "fiscalcode": form.fiscalcode.data})
+                flash("Operation successful!")
+            else:
+                flash("You've typed the wrong password!")
+        if session["role"] == "user":
+            if login_user(current_user.email, form.password.data):
+                # TODO add patch for birthdate to user service api
+                res = patch_user(current_user.id, {"firstname": form.firstname.data, "lastname": form.lastname.data, "fiscalcode": form.fiscalcode.data})
+                flash("Operation successful!")
+            else:
+                flash("You've typed the wrong password!")
 
     return render_template("change_profile.html", form=form)
 
@@ -69,10 +81,8 @@ def change_contacts():
     form = ChangeContactForm()
 
     if form.validate_on_submit():
-        if current_user.verify_password(form.password.data):
-            current_user.email = form.email.data
-            current_user.phonenumber = form.phonenumber.data
-            db.session.commit()
+        if login_user(current_user.email, form.password.data):
+            patch_user(current_user.id, {'email': form.email.data, 'phonenumber' : str(form.phonenumber.data)})
             flash("Operation successful!")
         else:
             flash("You've typed the wrong password!")

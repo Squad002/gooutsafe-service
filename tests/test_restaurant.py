@@ -91,7 +91,7 @@ def test_create_restaurant(client, db):
 
     assert res.status_code == 302
     assert fetched_restaurant.name == "Trattoria da Fabio"
-    assert fetched_restaurant.phonenumber == 555123456
+    assert fetched_restaurant.phonenumber == "555123456"
     assert fetched_restaurant.lat == 40.720586
     assert fetched_restaurant.lon == 10.10
     assert fetched_restaurant.time_of_stay == 30

@@ -6,9 +6,9 @@ class LoginUser(object):
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
-        self.is_authenticated = True
+        self.is_authenticated = False
         self.is_active = True
-        self.is_anonymous = False
+        self.is_anonymous = True
 
     def get_id(self):
         return self.id

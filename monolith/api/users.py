@@ -13,7 +13,10 @@ def register_user(user):
     res = requests.post(
         f"{current_app.config['URL_API_USER']}users",
         json=user,
-        timeout=(3.05, 9.1),
+        timeout=(
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        ),
     )
 
     return res.status_code == 201
@@ -23,7 +26,10 @@ def register_user(user):
 def delete_user(id):
     res = requests.delete(
         f"{current_app.config['URL_API_USER']}users/{id}",
-        timeout=(3.05, 9.1),
+        timeout=(
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        ),
     )
 
     return res.status_code == 204

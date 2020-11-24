@@ -1,7 +1,7 @@
 from flask import session, redirect
 from flask_login import current_user
 from monolith import login_manager
-from monolith.models import User, HealthAuthority, Operator
+from monolith.models import User, HealthAuthority, Operator, LoginUser
 from monolith import api
 from functools import wraps
 
@@ -45,16 +45,17 @@ def user_required(f):
 
 @login_manager.user_loader
 def load_user(user_id):
-    user = None
+    user_data = None
 
     if session["role"] == "user":
-        user = api.get_user_by_id(user_id)["id"]
+        user_data = api.get_user_by_id(user_id)
     elif session["role"] == "operator":
-        user = api.get_operator_by_id(user_id)["id"]
+        user_data = api.get_operator_by_email(user_id)
     elif session["role"] == "authority":
-        user = api.get_authority_by_id(user_id)["id"]
+        user_data = api.get_authority_by_email(user_id)
 
-    if user is not None:
-        user._authenticated = True
+    user = LoginUser(user_data)
+    user.is_authenticated = True
+    user.is_anonymous = False
 
     return user

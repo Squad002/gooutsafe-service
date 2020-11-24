@@ -9,7 +9,10 @@ def register_operator(operator):
     res = requests.post(
         f"{current_app.config['URL_API_USER']}operators",
         json=operator,
-        timeout=(3.05, 9.1),
+        timeout=(
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        ),
     )
 
     return res.status_code == 201
@@ -27,7 +30,10 @@ def get_operator_by_id(id):
 def delete_operator(id):
     res = requests.delete(
         f"{current_app.config['URL_API_USER']}operators/{id}",
-        timeout=(3.05, 9.1),
+        timeout=(
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        ),
     )
 
     return res.status_code == 204
@@ -37,7 +43,10 @@ def delete_operator(id):
 def get_operator_by_email(email):
     res = requests.get(
         f"{current_app.config['URL_API_USER']}operators?email={email}",
-        timeout=(3.05, 9.1),
+        timeout=(
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        ),
     )
 
     return res.json()[0] if res.json() else None

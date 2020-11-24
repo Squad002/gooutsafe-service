@@ -1,10 +1,6 @@
 from .fixtures import app, client, db
 from . import helpers
 
-# 140 - 42 132.75
-# 115 - 67
-# 139 - 43
-# TODO ERROR in breakers: list index out of range
 def test_user_correct_login(client):
     helpers.create_user(client)
     res = helpers.login_user(client)

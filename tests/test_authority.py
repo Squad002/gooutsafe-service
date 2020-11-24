@@ -6,6 +6,9 @@ from urllib.parse import urlparse
 import datetime
 
 
+# 140 - 42 132.75
+# 115 - 67
+# 139 - 43
 def test_create_authority_view_is_available(client):
     res = client.get("/register/authority")
     assert res.status_code == 200

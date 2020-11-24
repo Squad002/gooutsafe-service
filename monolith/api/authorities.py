@@ -9,7 +9,10 @@ def register_authority(authority):
     res = requests.post(
         f"{current_app.config['URL_API_USER']}authorities",
         json=authority,
-        timeout=(3.05, 9.1),
+        timeout=(
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        ),
     )
 
     return res.status_code == 201
@@ -27,7 +30,10 @@ def get_authority_by_id(id):
 def get_authority_by_email(email):
     res = requests.get(
         f"{current_app.config['URL_API_USER']}authorities?email={email}",
-        timeout=(3.05, 9.1),
+        timeout=(
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        ),
     )
 
     return res.json()[0] if res.json() else None

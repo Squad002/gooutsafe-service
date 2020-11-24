@@ -98,7 +98,7 @@ def unsubscribe():
 
     if session["role"] == "user":
         user = api.get_user_by_email(current_user.email)
-
+        
         if user["marked"]:
             flash("Positive users cannot be deleted", category="info")
             return redirect("/")

@@ -44,8 +44,10 @@ def get_users():
         current_app.logger.info("Using cached responses to serve restaurants")
     else:
         res = requests.get(
-            f"{current_app.config['URL_API_USER']}users", timeout=(3.05, 9.1)
-        )
+            f"{current_app.config['URL_API_USER']}users", timeout=(
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        ),)
         users = res.json()
         redis_client.setex("restaurants", 300, dumps(users))
 
@@ -55,8 +57,10 @@ def get_users():
 @read_request_breaker
 def get_user_by_id(id):
     res = requests.get(
-        f"{current_app.config['URL_API_USER']}users?id={id}", timeout=(3.05, 9.1)
-    )
+        f"{current_app.config['URL_API_USER']}users?id={id}", timeout=(
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        ),)
     return res.json()[0]
 
 

@@ -12,3 +12,46 @@ def test_unsubscribe_view_is_available(client):
     res = client.get("/unsubscribe")
 
     assert res.status_code == 302
+
+
+def test_user_has_been_deleted_should_be_true(client, db):
+    helpers.create_user(client)
+    helpers.login_user(client)
+
+    res = helpers.unsubscribe(client)
+
+    assert res.status_code == 302
+
+    res = helpers.login_user(client)
+    
+    assert res.status_code == 404
+
+
+def test_operator_has_been_deleted_should_be_true(client, db):
+
+    helpers.create_operator(client)
+    helpers.login_operator(client)
+
+    helpers.unsubscribe(client)
+
+    user = (
+        db.session.query(Operator)
+        .filter(Operator.email == "deleted@deleted.it")
+        .first()
+    )
+
+    assert user.firstname == "deleted"
+
+
+def test_marked_user_cannot_be_deleted_should_be_true(client, db):
+    ha = helpers.insert_health_authority(db)
+    user = helpers.insert_user(db)
+    ha.mark(user, duration=18)
+    db.session.commit()
+
+    helpers.login_user(client)
+    helpers.unsubscribe(client)
+
+    user = db.session.query(User).filter(User.email == "mariobrown@gmail.com").first()
+
+    assert user.firstname == "mario"

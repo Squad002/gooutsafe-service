@@ -50,9 +50,10 @@ def load_user(user_id):
     if session["role"] == "user":
         user_data = api.get_user_by_id(user_id)
     elif session["role"] == "operator":
-        user_data = api.get_operator_by_email(user_id)
+        user_data = api.get_operator_by_id(user_id)
     elif session["role"] == "authority":
-        user_data = api.get_authority_by_email(user_id)
+        user_data = api.get_authority_by_id(user_id)
+
 
     user = LoginUser(user_data)
     user.is_authenticated = True

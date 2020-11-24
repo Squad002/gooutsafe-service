@@ -7,6 +7,8 @@ from json import dumps, loads
 import requests
 
 
+# TODO Delete after everything is moved out and the cache mechanism is used in restaurants
+
 @read_request_breaker
 def get_users():
     users = redis_client.get("restaurants")
@@ -16,8 +18,10 @@ def get_users():
         current_app.logger.info("Using cached responses to serve restaurants")
     else:
         res = requests.get(
-            "{current_app.config['URL_API_USER']}users", timeout=(3.05, 9.1)
-        )
+            f"{current_app.config['URL_API_USER']}users", timeout=(
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        ))
         users = res.json()
         redis_client.setex("restaurants", 300, dumps(users))
 
@@ -27,7 +31,10 @@ def get_users():
 @read_request_breaker
 def get_user_by_id(id):
     res = requests.get(
-        f"{current_app.config['URL_API_USER']}users?id={id}", timeout=(3.05, 9.1)
+        f"{current_app.config['URL_API_USER']}users?id={id}", timeout=(
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        )
     )
     return res.json()[0]
 
@@ -35,7 +42,10 @@ def get_user_by_id(id):
 @read_request_breaker
 def get_user_by_email(email):
     res = requests.get(
-        f"{current_app.config['URL_API_USER']}users?email={email}", timeout=(3.05, 9.1)
+        f"{current_app.config['URL_API_USER']}users?email={email}", timeout=(
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        )
     )
     if res:
         # user = loads(dumps(res.json()[0]), object_hook=lambda d: SimpleNamespace(**d))
@@ -47,7 +57,10 @@ def get_user_by_email(email):
 @read_request_breaker
 def get_operator_by_id(id):
     res = requests.get(
-        f"{current_app.config['URL_API_USER']}operators?id={id}", timeout=(3.05, 9.1)
+        f"{current_app.config['URL_API_USER']}operators?id={id}", timeout=(
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        )
     )
     return res.json()[0]
 
@@ -55,7 +68,7 @@ def get_operator_by_id(id):
 @read_request_breaker
 def login(email, password):
     res = requests.post(
-        "{current_app.config['URL_API_USER']}users/login",
+        f"{current_app.config['URL_API_USER']}users/login",
         json={"email": email, "password": password},
     )
 

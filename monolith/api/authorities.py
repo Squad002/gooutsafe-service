@@ -21,9 +21,12 @@ def register_authority(authority):
 @read_request_breaker
 def get_authority_by_id(id):
     res = requests.get(
-        f"{current_app.config['URL_API_USER']}authorities?id={id}", timeout=(3.05, 9.1)
+        f"{current_app.config['URL_API_USER']}authorities?id={id}", timeout=(
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        )
     )
-    return res.json()[0]
+    return res.json()[0] if res.json() else None
 
 
 @read_request_breaker

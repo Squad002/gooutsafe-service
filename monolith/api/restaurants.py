@@ -49,3 +49,17 @@ def permissions(operator_id, restaurant_id):
     )
 
     return res.status_code
+
+
+@write_request_breaker
+def register_review(review):
+    res = requests.post(
+        f"{current_app.config['URL_API_RESTAURANT']}reviews",
+        json=review,
+        timeout=(
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        ),
+    )
+
+    return res.status_code

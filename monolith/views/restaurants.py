@@ -13,7 +13,7 @@ from monolith.models import (
 )
 from monolith.models.menu import Menu, Food, FoodCategory
 from monolith.models.table import Table
-from monolith.api.restaurants import register_restaurant, permissions, operator_restaurants_list
+from monolith.api.restaurants import register_restaurant, permissions, operator_restaurants_list, get_restaurant_by_id, register_review
 from monolith.services.auth import (
     current_user,
     operator_required,
@@ -95,31 +95,17 @@ def operator_restaurants(message=""):
 
 @restaurants.route("/restaurants/<restaurant_id>", methods=["GET", "POST"])
 def restaurant_sheet(restaurant_id):
-    q_restaurant = db.session.query(Restaurant).filter_by(
-        id=int(restaurant_id)).first()
+    restaurant = get_restaurant_by_id(restaurant_id)
 
-    if q_restaurant is None:
+    if restaurant is None:
         abort(404)
 
-    q_restaurant_precautions = (
-        db.session.query(Precautions.name)
-        .filter(
-            Precautions.id == RestaurantsPrecautions.precautions_id,
-            RestaurantsPrecautions.restaurant_id == int(restaurant_id),
-        )
-        .all()
-    )
-
-    precautions = []
-    for prec in q_restaurant_precautions:
-        precautions.append(prec.name)
-
-    average_rating = round(q_restaurant.average_rating, 1)
+    average_rating = round(restaurant["average_rating"], 1)
 
     # REVIEWS
     # TODO sort them by the most recent, or are they already in that order
     # TODO show in the view the date of the review
-    reviews = q_restaurant.reviews
+    reviews = restaurant["reviews"]
     form = ReviewForm()
     if form.is_submitted():
         if current_user.is_anonymous:
@@ -129,14 +115,17 @@ def restaurant_sheet(restaurant_id):
             if session["role"] != "user":
                 flash("Only a logged user can review a restaurant.")
             else:
+                review = {
+                    "message" : form.message.data,
+                    "rating" : form.rating.data,
+                    "user_id" : current_user.id,
+                    "restaurant_id" : int(restaurant_id)
+                }
+                status = register_review(review)
                 # Check if the user already did a review
-                if current_user.already_reviewed(q_restaurant):
+                if status == 409:
                     flash("You already reviewed this restaraunt")
                 else:
-                    rating = form.rating.data
-                    message = form.message.data
-                    current_user.review(q_restaurant, rating, message)
-                    db.session.commit()
                     return redirect("/restaurants/" + restaurant_id)
 
     path = "./monolith/static/uploads/" + str(restaurant_id)
@@ -148,21 +137,21 @@ def restaurant_sheet(restaurant_id):
 
     return render_template(
         "restaurantsheet.html",
-        id=q_restaurant.id,
-        name=q_restaurant.name,
-        lat=q_restaurant.lat,
-        lon=q_restaurant.lon,
-        phonenumber=q_restaurant.phonenumber,
-        precautions=precautions,
-        average_rating=average_rating,
-        open=q_restaurant.opening_hours,
-        close=q_restaurant.closing_hours,
-        cuisine=q_restaurant.cuisine_type.value,
-        menus=q_restaurant.menus,
+        id=restaurant["id"],
+        name=restaurant["name"],
+        lat=restaurant["lat"],
+        lon=restaurant["lon"],
+        phonenumber=restaurant["phone"],
+        precautions=restaurant["precautions"],
+        average_rating=restaurant["average_rating"],
+        open=restaurant["opening_hours"],
+        close=restaurant["closing_hours"],
+        cuisine=restaurant["cuisine_type"],
+        menus=restaurant["menus"],
         base_url=request.base_url,
         reviews=reviews,
         form=form,
-        operator_id=q_restaurant.operator_id,
+        operator_id=restaurant["operator_id"],
         file_names=names
     )
 

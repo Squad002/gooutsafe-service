@@ -1,7 +1,7 @@
 from flask.globals import session
 from flask.helpers import flash
 from flask import Blueprint, redirect, render_template, request, url_for, abort
-from werkzeug.datastructures import MultiDict
+from werkzeug.datastructures import MultiDict, FileStorage
 from monolith import db
 from monolith.models import (
     Restaurant,
@@ -15,7 +15,7 @@ from monolith.models import (
 )
 from monolith.models.menu import Menu, Food, FoodCategory
 from monolith.models.table import Table
-from monolith.api.restaurants import register_restaurant, operator_restaurants_list, get_restaurant_by_id, register_review, get_restaurants, get_restaurants_elastic
+from monolith.api.restaurants import register_restaurant, operator_restaurants_list, get_restaurant_by_id, register_review, get_restaurants, get_restaurants_elastic, upload_photos
 from monolith.api.menus import register_menu, menu_sheet
 from monolith.api.tables import register_table, tables_list, patch_table, remove_table
 from monolith.api.users import get_user_by_id
@@ -112,7 +112,9 @@ def restaurant_sheet(restaurant_id):
     reviews = restaurant["reviews"]
     form = ReviewForm()
     for review in reviews:
-        review["name"] = get_user_by_id(review["user_id"])["firstname"]
+        user = get_user_by_id(review["user_id"])
+        if user:
+            review["name"] = user["firstname"]
 
     if form.is_submitted():
         if current_user.is_anonymous:
@@ -405,7 +407,7 @@ def validate_image(stream):
 def handle_upload(restaurant_id):
     restaurant = get_restaurant_by_id(int(restaurant_id))
 
-    if q_restaurant is None:
+    if restaurant is None:
         abort(404)
 
     files = MultiDict()
@@ -425,7 +427,7 @@ def handle_upload(restaurant_id):
                 elif file_ext == ".jpeg":
                     file = FileStorage(uploaded_file, filename, content_type="image/jpg") 
                 
-                files.add(("filename", file))
+                files.add(filename, file)
 
         upload_photos(restaurant_id, files)
         return redirect("/restaurants/mine")

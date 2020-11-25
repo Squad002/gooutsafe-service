@@ -61,7 +61,13 @@ def get_user_by_id(id):
             current_app.config["READ_TIMEOUT"],
             current_app.config["WRITE_TIMEOUT"],
         ),)
-    return res.json()[0]
+
+    res = res.json()
+
+    if res:
+        return res[0]
+    else:
+        return None
 
 
 @read_request_breaker

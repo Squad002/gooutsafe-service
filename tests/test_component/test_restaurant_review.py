@@ -18,7 +18,6 @@ def test_user_should_see_review_form(client, db):
     res = visit_restaurant_page(client)
 
     assert res.status_code == 200
-    print(res.data)
     assert b"Add your review" in res.data
     assert b"Your rating" in res.data
     assert b"Your review" in res.data
@@ -201,7 +200,6 @@ def test_anonymous_user_should_see_review_form(client, db):
     helpers.login_operator(client)
     helpers.create_restaurant(client)
     helpers.logout(client)
-
 
     res = visit_restaurant_page(client)
 

@@ -120,14 +120,14 @@ class CreateRestaurantForm(FlaskForm):
     )
 
     precautions = [
-        (1, "Amuchina"),
-        (2, "Social distancing"),
-        (3, "Disposable menu"),
-        (4, "Personnel required to wash hands regularly"),
-        (5, "Obligatory masks for staff in public areas"),
-        (6, "Tables sanitized at the end of each meal")
+        ("Amuchina", "Amuchina"),
+        ("Social distancing", "Social distancing"),
+        ("Disposable menu", "Disposable menu"),
+        ("Personnel required to wash hands regularly", "Personnel required to wash hands regularly"),
+        ("Obligatory masks for staff in public areas", "Obligatory masks for staff in public areas"),
+        ("Tables sanitized at the end of each meal", "Tables sanitized at the end of each meal")
     ]
-    prec_measures = MultiCheckboxField('precautions', choices=precautions)
+    prec_measures = MultiCheckboxField('Precautions', choices=precautions)
 
     display = [
         "name",

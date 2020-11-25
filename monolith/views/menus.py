@@ -94,14 +94,12 @@ def create_menu(restaurant_id):
                     food_names.add(food["name"])
                     status = 200
 
-
-            status = register_menu(menu)
-            print(status)
-
-            if status == 204:
-                return redirect("/restaurants/" + str(restaurant_id))
-            else:
-                flash("A menu with the same name already exists")
+            if status == 200:
+                status = register_menu(menu)
+                if status == 201:
+                    return redirect("/restaurants/" + str(restaurant_id))
+                else:
+                    flash("A menu with the same name already exists")
 
     if zipped or menu_name:
         zip_to_send = zip(
@@ -138,4 +136,4 @@ def show_menu(restaurant_id, menu_id):
     if menu is None:
         abort(404)
 
-    return render_template("show_menu.html", menu=q_restaurant_menu)
+    return render_template("show_menu.html", menu=menu)

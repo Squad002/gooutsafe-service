@@ -9,8 +9,9 @@ from monolith.models import (
     Booking,
 )
 from monolith.models.menu import Menu, Food, MenuItems
-from monolith.api.restaurants import get_restaurant_by_id
-from monolith.api.tables import get_table_by_id
+from monolith.api.restaurants import get_restaurant_by_id, operator_restaurants_list, get_restaurants
+from monolith.api.tables import get_table_by_id, tables_list
+from monolith.api.menus import menu_sheet
 from urllib.parse import urlparse
 
 import io
@@ -517,7 +518,7 @@ def test_edit_table_not_owned_restaurant(client, db):
     helpers.login_operator(client, helpers.operator3)
 
     table_data = dict(id=1, name="A1", seats=1)
-    res = helpers.edit_table(client, table_data)
+    res = helpers.edit_table(client, data=table_data)
     fetched_table = get_table_by_id(1)
 
     assert res.status_code == 403
@@ -533,7 +534,7 @@ def test_edit_table_bad_restaurant_id(client, db):
 
     res = helpers.edit_table(client, restaurant_id=2)
 
-    assert res.status_code == 401
+    assert res.status_code == 404
 
 
 def test_edit_table_bad_table_id(client, db):
@@ -595,11 +596,11 @@ def test_operator_restaurant(client, db):
     helpers.create_restaurant(client)
 
     res = helpers.operator_restaurants(client)
-    op_restaurants = db.session.query(Restaurant).filter_by(operator_id=1)
-
+    op_restaurants = operator_restaurants_list(1)
+    
     assert res.status_code == 200
     for rest in op_restaurants:
-        assert bytes(rest.name, "utf-8") in res.data
+        assert bytes(rest["name"], "utf-8") in res.data
 
 
 def test_operator_restaurant_empty(client, db):
@@ -612,11 +613,11 @@ def test_operator_restaurant_empty(client, db):
 
     helpers.login_operator(client, helpers.operator3)
     res = helpers.operator_restaurants(client)
-    op_restaurants = db.session.query(Restaurant).filter_by(operator_id=1)
+    op_restaurants = operator_restaurants_list(1)
 
     assert res.status_code == 200
     for rest in op_restaurants:
-        assert bytes(rest.name, "utf-8") not in res.data
+        assert bytes(rest["name"], "utf-8") not in res.data
 
 
 def test_restaurants_available_anonymous(client):
@@ -654,11 +655,13 @@ def test_restaurants_logged(client, db):
     helpers.create_restaurant(client)
 
     res = client.get("/restaurants")
-    q_rest = db.session.query(Restaurant)
+    restaurants = get_restaurants()
 
     assert res.status_code == 200
-    for rest in q_rest:
-        assert bytes(rest.name, "utf-8") in res.data
+    for rest in restaurants:
+        assert bytes(rest["name"], "utf-8") in res.data
+
+
 
 
 def test_restaurants_notlogged(client, db):
@@ -668,11 +671,11 @@ def test_restaurants_notlogged(client, db):
     helpers.logout(client)
 
     res = client.get("/restaurants")
-    q_rest = db.session.query(Restaurant)
+    restaurants = get_restaurants()
 
     assert res.status_code == 200
-    for rest in q_rest:
-        assert bytes(rest.name, "utf-8") in res.data
+    for rest in restaurants:
+        assert bytes(rest["name"], "utf-8") in res.data
 
 
 def test_tables_notavailable_user(client):
@@ -728,11 +731,11 @@ def test_tables(client, db):
     helpers.create_table(client)
 
     res = client.get("/restaurants/1/tables")
-    q_table = db.session.query(Table).filter_by(restaurant_id=1)
+    tables = tables_list(1)
 
     assert res.status_code == 204
-    for table in q_table:
-        assert bytes(table.name, "utf-8") in res.data
+    for table in tables:
+        assert bytes(table["name"], "utf-8") in res.data
 
 
 def test_tables_not_exists(client):
@@ -792,7 +795,7 @@ def test_create_menu_isavailable_operator(client, db):
 
     res = client.get("/restaurants/1/menus/new")
 
-    assert res.status_code == 200
+    assert res.status_code == 204
 
 
 def test_create_menu_isnotavailable_ha(client, db):
@@ -827,7 +830,7 @@ def test_create_duplicate_menu(client, db):
     helpers.create_menu(client)
     res = helpers.create_menu(client)
 
-    assert res.status_code == 400
+    assert res.status_code == 409
 
 
 def test_create_menu_duplicate_foods(client, db):
@@ -851,7 +854,7 @@ def test_create_menu_not_owned_restaurant(client, db):
     helpers.create_menu(client)
     res = helpers.create_menu(client)
 
-    assert res.status_code == 401
+    assert res.status_code == 403
 
 
 def test_create_menu_bad_data(client, db):
@@ -896,26 +899,20 @@ def test_show_menu(client, db):
     helpers.create_menu(client)
 
     res = helpers.show_menu(client)
-    menu = db.session.query(Menu).filter(Menu.restaurant_id == 1, Menu.id == 1).first()
+
+    menu = menu_sheet(1)
 
     assert res.status_code == 200
-    assert bytes(menu.name, "utf-8") in res.data
-    for food in menu.foods:
-        assert bytes(food.name, "utf-8") in res.data
-        assert bytes(str(food.price), "utf-8") in res.data
-        assert bytes(food.category.value, "utf-8") in res.data
+    assert bytes(menu["name"], "utf-8") in res.data
+    for food in menu["foods"]:
+        assert bytes(food["name"], "utf-8") in res.data
+        assert bytes(str(food["price"]), "utf-8") in res.data
 
 
 def test_show_menu_not_exists(client):
     res = helpers.show_menu(client)
 
     assert res.status_code == 404
-
-
-def test_restaurants(client, db):
-    helpers.insert_restaurant_db(db)
-    allrestaurants = db.session.query(Restaurant).all()
-    assert len(allrestaurants) == 1
 
 
 def test_restaurant_booking_is_avaible_logged_user(

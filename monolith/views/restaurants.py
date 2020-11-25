@@ -13,7 +13,7 @@ from monolith.models import (
 )
 from monolith.models.menu import Menu, Food, FoodCategory
 from monolith.models.table import Table
-from monolith.api.restaurants import register_restaurant, permissions, operator_restaurants_list, get_restaurant_by_id, register_review
+from monolith.api.restaurants import register_restaurant, permissions, operator_restaurants_list, get_restaurant_by_id, register_review, get_restaurants, get_restaurants_elastic
 from monolith.services.auth import (
     current_user,
     operator_required,
@@ -44,7 +44,6 @@ restaurants = Blueprint("restaurants", __name__)
 logger = logging.getLogger("monolith")
 
 
-
 @restaurants.route("/restaurants")
 def _restaurants(message=""):
     session.pop("previous_search", "")
@@ -52,15 +51,14 @@ def _restaurants(message=""):
     if request.args.get("q"):
         query = request.args.get("q")
         session["previous_search"] = query
-        results, total = Restaurant.search(query, 1, 20)
-        allrestaurants = results.all()
+        allrestaurants = get_restaurants_elastic(query=query)
         logger.info(f"Searching for {query}")
-    else:            
-        allrestaurants = db.session.query(Restaurant)
+    else:        
+        allrestaurants = get_restaurants()
+        
 
-    restaurants = [res.__dict__ for res in allrestaurants]
     images_path_dict = {}
-    for el in restaurants:
+    for el in allrestaurants:
         # print(el)
         path = "./monolith/static/uploads/" + str(el["id"])
         photos_paths = os.listdir(path)
@@ -71,7 +69,7 @@ def _restaurants(message=""):
     return render_template(
         "restaurants.html",
         message=message,
-        restaurants=restaurants,
+        restaurants=allrestaurants,
         paths=images_path_dict,
         base_url=request.base_url,
         operator_restaurants=False,

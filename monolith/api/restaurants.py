@@ -93,3 +93,21 @@ def register_review(review):
     )
 
     return res.status_code
+
+
+@read_request_breaker
+def max_table_seats(restaurand_id):
+    res = requests.get(
+        f"{current_app.config['URL_API_RESTAURANT']}tables?restaurant_id={restaurand_id}",
+        timeout=(
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        )
+    )
+
+    tables_list = res.json()
+
+    max_seats_table = tables_list[len(tables_list)-1]
+    max_seats = max_seats_table["seats"]
+
+    return max_seats

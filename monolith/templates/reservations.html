@@ -53,21 +53,19 @@
         {%else%}
           {% for book in booking_list %}
             <tr>
-                <td>{{book[0].booking_number}}</td>
-                <td>{{book[1].name}}</td>
-                <td>{{book[2]}}</td>
-                {% set date_hour = (book[0].start_booking) | string%}
-                {% set hour = date_hour.split(' ')[1]%}
-                <td>{{hour[:-3]}}</td>  <!-- print only HH:MM -->
+                <td>{{book["booking_number"]}}</td>
+                <td>{{book["restaurant_name"]}}</td>
+                <td>{{book["people_number"]}}</td>
+                <td>{{book["date"][11:-4]}}</td>
                 <td>
-                  <form action="{{base_url}}/{{book[0].booking_number}}">
+                  <form action="{{base_url}}/{{book['booking_number']}}">
                     <button>
                         More details
                     </button>
                   </form>
                 </td>
                 <td>
-                  <form action="{{base_url}}/delete/{{book[0].booking_number}}">
+                  <form action="{{base_url}}/delete/{{book['booking_number']}}">
                     <button>
                         Remove
                     </button>

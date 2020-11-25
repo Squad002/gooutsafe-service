@@ -87,6 +87,7 @@ class Config:
 
     # Services
     URL_API_USER = os.environ.get("URL_API_USER") or "http://localhost:5001/"
+    URL_API_BOOKING = os.environ.get("URL_API_BOOKING") or "http://localhost:5002/"
     URL_API_RESTAURANT = os.environ.get("URL_API_RESTAURANT") or "http://localhost:5003/"
     READ_TIMEOUT = os.environ.get("READ_TIMEOUT") or 3.05
     WRITE_TIMEOUT = os.environ.get("WRITE_TIMEOUT") or 9.1

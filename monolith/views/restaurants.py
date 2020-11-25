@@ -20,7 +20,6 @@ from monolith.api.menus import register_menu, menu_sheet
 from monolith.api.tables import register_table, tables_list, patch_table, remove_table
 from monolith.api.users import get_user_by_id
 from monolith.services.auth import (
-    current_user,
     operator_required,
     user_required,
 )
@@ -39,6 +38,8 @@ from sqlalchemy import func
 from flask_login import current_user
 from monolith.services.background.tasks import send_email
 from werkzeug.utils import secure_filename
+from monolith import api
+from flask_login import current_user
 
 import os
 import imghdr
@@ -169,35 +170,21 @@ def restaurant_sheet(restaurant_id):
 @login_required
 @user_required
 def book_table_form(restaurant_id):
-    if db.session.query(Mark).filter_by(user_id=current_user.id).first() is not None:
+    if current_user.marked == True:
         flash("You are marked so you can't book a table")
         return redirect("/restaurants/" + str(restaurant_id))
 
     form = CreateBookingDateHourForm()
-    max_table_seats = (
-        db.session.query(func.max(Table.seats))
-        .filter(Table.restaurant_id == restaurant_id)
-        .first()[0]
-    )  # Take max seats from tables of restaurant_ud
+    max_table_seats = api.max_table_seats(restaurant_id)  # Take max seats from tables of restaurant_id
+    restaurant = get_restaurant_by_id(restaurant_id)
     time = []
-    range_hour = (
-        db.session.query(Restaurant.time_of_stay).filter_by(
-            id=restaurant_id).first()[0]
-    )
-    opening_hour = int(
-        db.session.query(Restaurant.opening_hours)
-        .filter_by(id=restaurant_id)
-        .first()[0]
-        * 60
-    )
-    closing_hour = int(
-        db.session.query(Restaurant.closing_hours)
-        .filter_by(id=restaurant_id)
-        .first()[0]
-        * 60
-    )
+    range_hour = restaurant["time_of_stay"]
+    opening_hour = restaurant["opening_hours"] * 60
+    closing_hour = restaurant["closing_hours"]* 60
+    
     if closing_hour < opening_hour:
         closing_hour = closing_hour + (24 * 60)
+    
     for i in range(opening_hour, closing_hour, range_hour):
         time.append(
             str(timedelta(minutes=i))[:-3]
@@ -207,62 +194,37 @@ def book_table_form(restaurant_id):
 
     if request.method == "POST":
         if form.validate_on_submit():
-            number_persons = int(request.form["number_persons"])
+            seats = int(request.form["number_persons"])
             booking_hour_start = request.form["booking_hour"].split(" - ")[0]
             booking_hour_end = request.form["booking_hour"].split(" - ")[1]
             booking_date = request.form["booking_date"]
-            booking_date_start = datetime.strptime(
-                booking_date + " " + booking_hour_start, "%Y-%m-%d %H:%M"
-            )
-            booking_date_end = datetime.strptime(
-                booking_date + " " + booking_hour_end, "%Y-%m-%d %H:%M"
+            booking_date_start = booking_date + " " + booking_hour_start
+            booking_date_end = booking_date + " " + booking_hour_end
+
+            confirmed_bookign = True if seats == 1 else False
+            booking = api.make_booking(
+                confirmed_bookign,
+                booking_date_end,
+                restaurant["id"],
+                seats,
+                booking_date_start,
+                current_user.id,
             )
 
-            restaurant = (
-                db.session.query(Restaurant)
-                .filter(Restaurant.id == restaurant_id)
-                .first()
-            )
-            table = restaurant.get_free_table(
-                number_persons, booking_date_start)
-
-            if table is None:
+            if booking.status_code == 404:  
                 flash(
                     "No tables avaible for "
-                    + str(number_persons)
+                    + str(seats)
                     + " people for this date and time"
-                )
+                ) 
+
             else:
-                booking_number = db.session.query(
-                    func.max(Booking.booking_number)
-                ).first()[0]
-                print(booking_number)
-                if booking_number is None:
-                    booking_number = 1
-                else:
-                    booking_number += 1
-
-                confirmed_bookign = True if number_persons == 1 else False
-                db.session.add(
-                    Booking(
-                        user_id=current_user.id,
-                        table_id=table,
-                        booking_number=booking_number,
-                        start_booking=booking_date_start,
-                        end_booking=booking_date_end,
-                        confirmed_booking=confirmed_bookign,
-                    )
-                )
-                db.session.commit()
-
-                old_booking_number = booking_number
-
                 if confirmed_bookign:
                     flash("Booking confirmed", category="success")
                     return redirect("/restaurants")
                 else:
-                    session["booking_number"] = old_booking_number
-                    session["number_persons"] = number_persons
+                    session["booking_number"] = booking.json()
+                    session["seats"] = seats
                     return redirect(
                         url_for(".confirm_booking",
                                 restaurant_id=restaurant_id)
@@ -282,84 +244,43 @@ def book_table_form(restaurant_id):
 @user_required
 def confirm_booking(restaurant_id):
     booking_number = session["booking_number"]
-    number_persons = session["number_persons"]
-    form = ConfirmBookingForm(number_persons - 1)
+    seats = session["seats"]
+    form = ConfirmBookingForm(seats - 1)
     error = False
 
     if form.validate_on_submit():
-        booking = (
-            db.session.query(Booking).filter_by(
-                booking_number=booking_number).first()
-        )
+        booking = api.get_booking_by_id(booking_number)
 
+        users_list_booking = {
+            "booking_number": booking_number,
+            "users": []
+        }
+        users_list = users_list_booking["users"]
         for i, field in enumerate(form.people):
-            user = (
-                db.session.query(User)
-                .filter_by(fiscal_code=field.fiscal_code.data)
-                .first()
-            )
-            if user is None:
-                if (
-                    db.session.query(User).filter_by(
-                        email=field.email.data).first()
-                    is None
-                ):  # check if email is already in the db or not
-                    user = User(
-                        firstname=field.firstname.data,
-                        lastname=field.lastname.data,
-                        email=field.email.data,
-                        fiscal_code=field.fiscal_code.data,
-                    )
-                    db.session.add(user)
-                    db.session.commit()
-                else:
-                    flash(
-                        "Person " + str(i + 1) +
-                        ", mail already used from another user"
-                    )
-                    error = True
-                    break
-            else:
-                if not user.check_equality_for_booking(
-                    field.firstname.data, field.lastname.data, field.email.data
-                ):  # if the user exists, check if the data filled are correct
-                    flash("Person " + str(i + 1) + ", incorrect data")
-                    error = True
-                    break
-                if booking.user_already_booked(user.id):
-                    flash(
-                        "Person "
-                        + str(i + 1)
-                        + ", user already registered in the booking"
-                    )
-                    error = True
-                    break
-            db.session.add(
-                Booking(
-                    user_id=user.id,
-                    table_id=booking.table_id,
-                    booking_number=booking.booking_number,
-                    start_booking=booking.start_booking,
-                    end_booking=booking.end_booking,
-                    confirmed_booking=True,
-                )
-            )
+            user = {
+                "firstname": field.firstname.data,
+                "lastname": field.lastname.data,
+                "email": field.email.data,
+                "fiscalcode": field.fiscalcode.data,
+            }
 
-        if error:
-            db.session.rollback()
+            users_list.append(user)
+
+        res = api.confirm_booking(users_list_booking)
+
+        if res.status_code != 201:
+            flash(res.json())
         else:
-            booking.confirmed_booking = True
-            db.session.commit()
-
             session.pop("booking_number", None)
-            session.pop("number_persons", None)
+            session.pop("seats", None)
             flash("Booking confirmed", category="success")
 
             send_booking_confirmation_mail(booking_number)
             return redirect("/restaurants")
 
+
     return render_template(
-        "confirm_booking.html", form=form, number_persons=int(number_persons)
+        "confirm_booking.html", form=form, number_persons=int(seats)
     )
 
 
@@ -733,56 +654,27 @@ def delete_table(restaurant_id, table_id):
 @login_required
 @operator_required
 def operator_reservations_list(restaurant_id):
-    operator_id = (
-        db.session.query(Restaurant.operator_id).filter_by(
-            id=restaurant_id).first()[0]
-    )
+    operator = api.get_restaurant_by_id(restaurant_id)
 
-    if operator_id != current_user.id:
+    if operator["operator_id"] != current_user.id:
         flash("Access denied")
         return redirect("/restaurants")
 
     form = ChooseReservationData()
     date_show = date.today()
-    tomorrow = date_show + timedelta(days=1)
 
-    booking_list = (
-        db.session.query(Booking, Table, func.count())
-        .join(Table)
-        .join(Restaurant)
-        .filter(
-            Restaurant.id == restaurant_id,
-            Booking.start_booking >= date.today(),
-            Booking.start_booking < tomorrow,
-        )
-        .group_by(Booking.booking_number)
-        .order_by(Booking.start_booking.asc())
-        .all()
-    )
+    booking_list = api.reservations_list_by_restaurant_id_date(restaurant_id, str(date_show))
 
     if request.method == "POST":
         if form.validate_on_submit():
-            chosen_date = datetime.strptime(request.form["date"], "%Y-%m-%d")
-            tomorrow = chosen_date + timedelta(days=1)
+            chosen_date = request.form["date"]
             date_show = request.form["date"]
 
-            booking_list = (
-                db.session.query(Booking, Table, func.count())
-                .join(Table)
-                .join(Restaurant)
-                .filter(
-                    Restaurant.id == restaurant_id,
-                    Booking.start_booking >= chosen_date,
-                    Booking.start_booking < tomorrow,
-                )
-                .group_by(Booking.booking_number)
-                .order_by(Booking.start_booking.asc())
-                .all()
-            )
+            booking_list = api.reservations_list_by_restaurant_id_date(restaurant_id, chosen_date)
 
     total_people = 0
     for booking in booking_list:
-        total_people += booking[2]
+        total_people += booking["people_number"]
 
     return render_template(
         "reservations.html",
@@ -801,58 +693,39 @@ def operator_reservations_list(restaurant_id):
 @operator_required
 @login_required
 def operator_checkin_reservation(restaurant_id, booking_number):
-    allow_operation = (
-        db.session.query(Booking)
-        .join(Table)
-        .join(Restaurant)
-        .join(Operator)
-        .filter(
-            Booking.booking_number == booking_number, Operator.id == current_user.id
-        )
-        .first()
-    )
-    if allow_operation is None:  # check if operator can see the page
+    
+    if api.check_permission(booking_number, current_user.id, restaurant_id) == False:  # check if operator can see the page
         flash("Operation denied ")
         return redirect(
             url_for(".operator_reservations_list", restaurant_id=restaurant_id)
         )
 
     if request.method == "POST":
+        checkin = {
+            "booking_number": booking_number,
+            "user_list": []
+        }
+        user_list = checkin["user_list"]
         for user_id in request.form.getlist("people"):
-            aux = (
-                db.session.query(Booking).filter(
-                    Booking.user_id == user_id, Booking.booking_number == booking_number
-                ).first()
-            )
-            aux.checkin = True
-            db.session.commit()
+            user_list.append({"user_id": user_id})
+        
+        api.confirm_checkin(checkin)
 
-    confirmed_booking = (
-        db.session.query(Booking.confirmed_booking)
-        .filter_by(booking_number=booking_number)
-        .first()[0]
-    )
-    checkin_done = (
-        db.session.query(Booking.checkin)
-        .filter_by(booking_number=booking_number)
-        .order_by(Booking.checkin.desc())
-        .first()[0]
-    )
 
-    user_list = (
-        db.session.query(User)
-        .join(Booking)
-        .filter(Booking.booking_number == booking_number)
-        .all()
-    )
+    confirmed_booking_checkin_done = api.booking_and_checkin(booking_number)
+
+    confirmed_booking = confirmed_booking_checkin_done["confirmed_booking"]
+    checkin_done = confirmed_booking_checkin_done["checkin"]
+
+    user_list = api.get_users_reservation(booking_number)
 
     user_list_with_marks = []
     someone_marked = False
 
     for user in user_list:
-        if user.is_marked():
+        if user["marked"]:
             someone_marked = True
-        user_list_with_marks.append((user, user.is_marked()))
+        user_list_with_marks.append((user, user["marked"]))
 
     if someone_marked:
         flash("Attentions, people in red are marked as covid positive")
@@ -899,12 +772,8 @@ def operator_delete_reservation(restaurant_id, booking_number):
 @login_required
 @user_required
 def user_booking_list():
-    list_booking = db.session.query(Booking).filter(    Booking.user_id == current_user.id, Booking.start_booking >= date.today()).all()
-    
-    list_booking_with_restaurant=[]
-    for booking in list_booking:
-        restaurant = db.session.query(Restaurant).join(Table).filter(Table.id==booking.table_id).first()
-        list_booking_with_restaurant.append((booking,restaurant))
+    list_booking_with_restaurant = api.user_booking_list(current_user.id)
+
     return render_template(
             "user_list_bookings.html",
             list_booking=list_booking_with_restaurant,
@@ -917,13 +786,12 @@ def user_booking_list():
 @login_required
 @user_required
 def user_delete_booking(booking_number):
-    booking = db.session.query(Booking).filter_by(booking_number=booking_number, user_id=current_user.id).first()
-    if booking is None:
+    booking = api.get_booking_by_id(booking_number)
+    if not booking or booking["user_id"] != current_user.id:
         flash("Operation denied")
         return redirect(url_for('.user_booking_list'))
 
-    db.session.query(Booking).filter_by(booking_number=booking_number).delete()
-    db.session.commit()
+    api.delete_booking(current_user.id, booking_number)
 
     flash('Booking deleted', category='success')
     return redirect(url_for('.user_booking_list'))

@@ -38,26 +38,26 @@
     </tr>
     {% for booking in list_booking %}
         <tr>
-            <td>{{booking[1].name}}</td>
-            {% set date_hour = booking[0].start_booking | string%}
+            <td>{{booking[1]["name"]}}</td>
+            {% set date_hour = booking[0]["start_booking"] | string%}
             {% set date_hour = date_hour.split('.')[0]%}
-            {% set date = date_hour.split(' ')[0] %}
-            {% set hour = date_hour.split(' ')[1] %}
+            {% set date = date_hour.split('T')[0] %}
+            {% set hour = date_hour.split('T')[1] %}
             <td>{{date}}</td>
-            <td>{{hour[:-3]}}</td>
-            {% if booking[0].confirmed_booking %}
+            <td>{{hour[:-4]}}</td>
+            {% if booking[0]["confirmed_booking"] %}
                 <td>Confirmed</td>
             {% else %}
                 <td>Not confirmed</td>
             {%endif%}
-            {% if booking[0].checkin %}
+            {% if booking[0]["checkin"] %}
                 <td>Done</td>
             {% else %}
                 <td>Not done</td>
             {%endif%}
-            {% if not booking[0].checkin %}
+            {% if not booking[0]["checkin"] %}
                 <td>
-                    <form method="POST" action="{{base_url}}/delete/{{booking[0].id}}">
+                    <form method="POST" action="{{base_url}}/delete/{{booking[0]['id']}}">
                         <button>Delete</button>
                     </form>
                 </td>

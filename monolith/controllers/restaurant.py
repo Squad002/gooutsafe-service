@@ -2,6 +2,7 @@ from monolith.models import Restaurant, RestaurantsPrecautions
 from monolith.models.table import Table
 from monolith import db
 
+# TODO remove after integration
 
 def add_new_restaurant(restaurant, prec_measures=None):
     q_rest = Restaurant.query.filter_by(

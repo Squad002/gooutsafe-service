@@ -10,13 +10,13 @@
 </h2>
 <form method="POST" action="">
     {% for user in user_list %}
-    {%if user[1] == None%} <!-- If is not marked-->
+    {%if user[1] == False%} <!-- If is not marked-->
         {% if not checkin %}
             <input type="checkbox" name='people' value="{{user[0].id}}">
         {% endif %}
-        <label for="{{user[0].id}}">{{user[0].firstname}} {{user[0].lastname}} {{user[0].email}}</label><br/>
+        <label for="{{user[0].id}}">{{user[0]["firstname"]}} {{user[0]["lastname"]}} {{user[0]["email"]}}</label><br/>
         {%else%}
-            <label for="{{user[0].id}}" style="color:red">{{user[0].firstname}} {{user[0].lastname}} {{user[0].email}}</label><br/>
+            <label for="{{user[0].id}}" style="color:red">{{user[0]["firstname"]}} {{user[0]["lastname"]}} {{user[0]["email"]}}</label><br/>
         {% endif %}
 
     {% endfor %}

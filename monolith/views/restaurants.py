@@ -4,7 +4,6 @@ from flask import Blueprint, redirect, render_template, request, url_for, abort
 from monolith import db
 from monolith.models import (
     Restaurant,
-    Precautions,
     RestaurantsPrecautions,
     Table,
     User,
@@ -14,6 +13,8 @@ from monolith.models import (
 )
 from monolith.models.menu import Menu, Food, FoodCategory
 from monolith.models.table import Table
+from monolith.api.restaurants import register_restaurant, permissions
+from monolith.api.tables import register_table, tables_list
 from monolith.services.auth import (
     current_user,
     operator_required,
@@ -438,123 +439,29 @@ def create_restaurant():
     form = CreateRestaurantForm()
     if request.method == "POST":
         if form.validate_on_submit():
-            new_restaurant = Restaurant()
-            form.populate_obj(new_restaurant)
+            precautions = [v for k, v in form.precautions]
+            new_restaurant = {
+                "closing_hours": form.closing_hours.data,
+                "cuisine_type": form.cuisine_type.data,
+                "lat": form.lat.data,
+                "lon": form.lon.data,
+                "name": form.name.data,
+                "opening_hours": form.opening_hours.data,
+                "operator_id": current_user.id,
+                "phone": str(form.phonenumber.data),
+                "precautions": precautions,
+                "time_of_stay": int(form.time_of_stay.data)
+            }
 
-            new_restaurant.operator_id = current_user.id
-
-            if restaurant.add_new_restaurant(
-                new_restaurant, request.form.getlist("prec_measures")
-            ):
-                os.makedirs("./monolith/static/uploads/" + str(new_restaurant.id), exist_ok=True)
-
+            status = register_restaurant(new_restaurant)
+            if status == 201:
                 return redirect("/restaurants/mine")
             else:
                 flash("Restaurant already added", category="error")
-                status = 400
         else:
             status = 400
 
     return render_template("create_restaurant.html", form=form), status
-
-
-@restaurants.route("/restaurants/<restaurant_id>/menus/new", methods=["GET", "POST"])
-@login_required
-@operator_required
-def create_menu(restaurant_id):
-    status = 200
-
-    zipped = None
-    name = ""
-
-    q_restaurant = db.session.query(Restaurant).filter_by(
-        id=int(restaurant_id)).first()
-    if q_restaurant is None:
-        abort(404)
-
-    if restaurant.check_restaurant_ownership(current_user.id, restaurant_id):
-        if request.method == "POST":
-            menu = Menu()
-            menu.name = request.form["menu_name"]
-            name = request.form["menu_name"]
-
-            if menu.name == "":
-                flash("No empty menu name!", category="error")
-                status = 400
-
-            q = db.session.query(Menu).filter_by(name=menu.name).first()
-            if q is None and status == 200:
-                menu.restaurant_id = int(restaurant_id)
-
-                food_names = set()
-                zipped = zip(
-                    request.form.getlist("name"),
-                    request.form.getlist("price"),
-                    request.form.getlist("category"),
-                )
-                for name, price, category in zipped:
-                    food = Food()
-                    food.name = name
-                    food.category = category
-                    choices = [i[0] for i in FoodCategory.choices()]
-                    try:
-                        food.price = float(price)
-                        is_float = True
-                    except ValueError:
-                        is_float = False
-
-                    if not is_float:
-                        flash("Not a valid price number", category="error")
-                        status = 400
-                    elif food.price < 0:
-                        flash("No negative values!", category="error")
-                        status = 400
-                    elif food.name == "":
-                        flash("No empty food name!", category="error")
-                        status = 400
-                    elif food.category not in choices:
-                        flash("Wrong category selected!", category="error")
-                        status = 400
-                    elif food.name in food_names:
-                        flash("No duplicate food name!", category="error")
-                        status = 400
-                    else:
-                        menu.foods.append(food)
-                        food_names.add(food.name)
-
-                if status == 200:
-                    db.session.add(menu)
-                    db.session.commit()
-                    return redirect("/restaurants/" + str(restaurant_id))
-            else:
-                status = 400
-                flash("There is already a menu with the same name!",
-                      category="error")
-    else:
-        status = 401
-
-    if zipped or name:
-        zip_to_send = zip(
-            request.form.getlist("name"),
-            request.form.getlist("price"),
-            request.form.getlist("category"),
-        )
-
-        return (
-            render_template(
-                "create_menu.html",
-                choices=FoodCategory.choices(),
-                items=zip_to_send,
-                menu_name=name,
-            ),
-            status,
-        )
-    else:
-        return (
-            render_template("create_menu.html",
-                            choices=FoodCategory.choices()),
-            status,
-        )
 
 
 @restaurants.route(
@@ -577,63 +484,49 @@ def show_menu(restaurant_id, menu_id):
 @login_required
 @operator_required
 def _tables(restaurant_id):
-    status = 200
+    status = permissions(current_user.id, restaurant_id)
 
-    q_restaurant = db.session.query(Restaurant).filter_by(
-        id=int(restaurant_id)).first()
-    if q_restaurant is None:
-        abort(404)
-
-    if restaurant.check_restaurant_ownership(current_user.id, restaurant_id):
-        alltables = db.session.query(Table).filter_by(
-            restaurant_id=restaurant_id)
-        return (
-            render_template(
-                "tables.html",
-                tables=alltables,
-                base_url=request.base_url,
-            ),
-            status,
-        )
-    else:
-        status = 401
-        return (
-            render_template(
-                "tables.html",
-                base_url=request.base_url,
-            ),
-            status,
-        )
+    if status != 204:
+        abort(status)
+        
+    alltables = tables_list(restaurant_id)
+        
+    return (
+        render_template(
+            "tables.html",
+            tables=alltables,
+            base_url=request.base_url,
+        ),
+        status,
+    )
 
 
 @restaurants.route("/restaurants/<restaurant_id>/tables/new", methods=["GET", "POST"])
 @login_required
 @operator_required
 def create_table(restaurant_id):
-    status = 200
-
-    q_restaurant = db.session.query(Restaurant).filter_by(
-        id=int(restaurant_id)).first()
-    if q_restaurant is None:
-        abort(404)
-
     form = CreateTableForm()
-    if restaurant.check_restaurant_ownership(current_user.id, restaurant_id):
-        if request.method == "POST":
-            if form.validate_on_submit():
-                new_table = Table()
-                form.populate_obj(new_table)
-                new_table.restaurant_id = restaurant_id
 
-                if restaurant.add_new_table(new_table):
-                    return redirect("/restaurants/" + restaurant_id + "/tables")
-                else:
-                    status = 400
-                    flash("Table already added", category="error")
+    status = permissions(current_user.id, restaurant_id)
+
+    if status != 204:
+        abort(status)
+        
+    if request.method == "POST":
+        if form.validate_on_submit():
+            new_table = {
+                "name" : form.name.data,
+                "seats" : form.seats.data,
+                "restaurant_id" : int(restaurant_id)
+            }
+
+            status = register_table(new_table)
+            if status == 201:
+                return redirect("/restaurants/" + restaurant_id + "/tables")
             else:
-                status = 400
-    else:
-        status = 401
+                flash("Table already added", category="error")
+        else:
+            status = 400
 
     return render_template("create_table.html", form=form), status
 

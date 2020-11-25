@@ -104,7 +104,7 @@ health_authority2 = dict(
 
 restaurant = dict(
     name="Trattoria da Fabio",
-    phonenumber=555123456,
+    phonenumber="555123456",
     lat=40.720586,
     lon=10.10,
     time_of_stay=30,

@@ -52,7 +52,7 @@ def make_shell_context():
 def deploy():
     """Run deployment tasks."""
     # migrate database to latest revision
-    upgrade()
+    # upgrade()
 
     # Insert fake data
     mock.everything()

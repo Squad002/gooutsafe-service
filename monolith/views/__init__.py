@@ -7,6 +7,7 @@ from .health_authorities import authorities
 from .marks import marks
 from .profile import me
 from .menus import menus
+from .tables import tables
 from .errors import handlers
 
 blueprints = [
@@ -15,6 +16,7 @@ blueprints = [
     auth,
     users,
     restaurants,
+    tables,
     menus,
     operators,
     authorities,

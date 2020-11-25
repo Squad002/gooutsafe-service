@@ -13,8 +13,7 @@ from monolith.models import (
 )
 from monolith.models.menu import Menu, Food, FoodCategory
 from monolith.models.table import Table
-from monolith.api.restaurants import register_restaurant, permissions
-from monolith.api.tables import register_table, tables_list
+from monolith.api.restaurants import register_restaurant, permissions, operator_restaurants_list
 from monolith.services.auth import (
     current_user,
     operator_required,
@@ -29,7 +28,6 @@ from monolith.services.forms import (
     ConfirmBookingForm,
     ChooseReservationData,
 )
-from ..controllers import restaurant
 from datetime import date, timedelta, datetime
 from sqlalchemy import func
 from flask_login import current_user
@@ -84,9 +82,7 @@ def _restaurants(message=""):
 @login_required
 @operator_required
 def operator_restaurants(message=""):
-    operator_restaurants = db.session.query(Restaurant).filter_by(
-        operator_id=current_user.id
-    )
+    operator_restaurants = operator_restaurants_list(current_user.id)
     return render_template(
         "restaurants.html",
         message=message,
@@ -462,134 +458,6 @@ def create_restaurant():
             status = 400
 
     return render_template("create_restaurant.html", form=form), status
-
-
-@restaurants.route(
-    "/restaurants/<restaurant_id>/menus/show/<menu_id>", methods=["GET", "POST"]
-)
-def show_menu(restaurant_id, menu_id):
-    q_restaurant_menu = (
-        db.session.query(Menu)
-        .filter(Menu.restaurant_id == restaurant_id, Menu.id == menu_id)
-        .first()
-    )
-
-    if q_restaurant_menu is None:
-        abort(404)
-
-    return render_template("show_menu.html", menu=q_restaurant_menu)
-
-
-@restaurants.route("/restaurants/<restaurant_id>/tables")
-@login_required
-@operator_required
-def _tables(restaurant_id):
-    status = permissions(current_user.id, restaurant_id)
-
-    if status != 204:
-        abort(status)
-        
-    alltables = tables_list(restaurant_id)
-        
-    return (
-        render_template(
-            "tables.html",
-            tables=alltables,
-            base_url=request.base_url,
-        ),
-        status,
-    )
-
-
-@restaurants.route("/restaurants/<restaurant_id>/tables/new", methods=["GET", "POST"])
-@login_required
-@operator_required
-def create_table(restaurant_id):
-    form = CreateTableForm()
-
-    status = permissions(current_user.id, restaurant_id)
-
-    if status != 204:
-        abort(status)
-        
-    if request.method == "POST":
-        if form.validate_on_submit():
-            new_table = {
-                "name" : form.name.data,
-                "seats" : form.seats.data,
-                "restaurant_id" : int(restaurant_id)
-            }
-
-            status = register_table(new_table)
-            if status == 201:
-                return redirect("/restaurants/" + restaurant_id + "/tables")
-            else:
-                flash("Table already added", category="error")
-        else:
-            status = 400
-
-    return render_template("create_table.html", form=form), status
-
-
-@restaurants.route(
-    "/restaurants/<restaurant_id>/tables/edit/<table_id>",
-    methods=["GET", "POST"],
-)
-@login_required
-@operator_required
-def edit_table(restaurant_id, table_id):
-    status = 200
-
-    form = CreateTableForm()
-    if restaurant.check_restaurant_ownership(current_user.id, restaurant_id):
-        if request.method == "POST":
-            if form.validate_on_submit():
-                new_table = Table()
-                form.populate_obj(new_table)
-                new_table.restaurant_id = restaurant_id
-                new_table.id = table_id
-
-                if restaurant.check_table_existence(new_table):
-                    if restaurant.edit_table(new_table):
-                        return redirect("/restaurants/" + restaurant_id + "/tables")
-                    else:
-                        status = 400
-                        flash(
-                            "There is already a table with the same name!",
-                            category="error",
-                        )
-                else:
-                    status = 404
-                    flash("Specified table does not exist!", category="error")
-            else:
-                status = 400
-    else:
-        status = 401
-
-    return render_template("create_table.html", form=form), status
-
-
-@restaurants.route(
-    "/restaurants/<restaurant_id>/tables/delete/<table_id>",
-    methods=["GET", "POST"],
-)
-@login_required
-@operator_required
-def delete_table(restaurant_id, table_id):
-    status = 200
-
-    if restaurant.check_restaurant_ownership(current_user.id, restaurant_id):
-        table = Table(id=table_id)
-
-        if restaurant.delete_table(table):
-            return redirect("/restaurants/" + restaurant_id + "/tables"), status
-        else:
-            status = 404
-            flash("The table to be deleted does not exist!", category="error")
-    else:
-        status = 401
-
-    return redirect("/restaurants/" + restaurant_id + "/tables"), status
 
 
 @restaurants.route("/restaurants/<restaurant_id>/reservations", methods=["GET", "POST"])

@@ -4,7 +4,7 @@ from flask import Blueprint, redirect, render_template, request, url_for, abort
 from flask_login import current_user
 from flask_login import login_required
 from monolith.services.auth import operator_required, user_required
-from monolith.api.menus import register_menu
+from monolith.api.menus import register_menu, menu_sheet
 from monolith.api.restaurants import permissions
 
 menus = Blueprint("menus", __name__)
@@ -18,23 +18,23 @@ def create_menu(restaurant_id):
     
     zipped = None
     menu_name = ""
-    status = permissions(operator_id, restaurant_id)
+    status = permissions(current_user.id, restaurant_id)
     if status == 403:
         abort(403)
         
-    if request.method == "POST":
-        menu_name = request.form["menu_name"]
-
-        choices = [
+    choices = [
             "ETHNIC",
             "PUB",
             "FAST_FOOD"
         ]
-        values = [
-            "Ethnic",
-            "Pub",
-            "Fast Food"
-        ]
+    values = [
+        "Ethnic",
+        "Pub",
+        "Fast Food"
+    ]
+
+    if request.method == "POST":
+        menu_name = request.form["menu_name"]
 
         if menu_name == "":
             flash("No empty menu name!", category="error")
@@ -115,3 +115,15 @@ def create_menu(restaurant_id):
                             values=values),
             status,
         )
+
+
+@menus.route(
+    "/restaurants/<restaurant_id>/menus/show/<menu_id>", methods=["GET", "POST"]
+)
+def show_menu(restaurant_id, menu_id):
+    menu = menu_sheet(menu_id)
+
+    if menu is None:
+        abort(404)
+
+    return render_template("show_menu.html", menu=q_restaurant_menu)

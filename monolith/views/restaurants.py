@@ -15,7 +15,7 @@ from monolith.models import (
 )
 from monolith.models.menu import Menu, Food, FoodCategory
 from monolith.models.table import Table
-from monolith.api.restaurants import register_restaurant, operator_restaurants_list, get_restaurant_by_id, register_review, get_restaurants, get_restaurants_elastic, upload_photos
+from monolith.api.restaurants import register_restaurant, operator_restaurants_list, get_restaurant_by_id, register_review, get_restaurants, get_restaurants_elastic
 from monolith.api.menus import register_menu, menu_sheet
 from monolith.api.tables import register_table, tables_list, patch_table, remove_table
 from monolith.api.users import get_user_by_id
@@ -63,7 +63,6 @@ def _restaurants(message=""):
     else:        
         allrestaurants = get_restaurants()
         
-
     images_path_dict = {}
     for el in allrestaurants:
         # print(el)
@@ -331,7 +330,6 @@ def handle_upload(restaurant_id):
     if restaurant is None:
         abort(404)
 
-    files = MultiDict()
     if request.method == "POST":
         for key, uploaded_file in request.files.items():
             filename = secure_filename(uploaded_file.filename)
@@ -340,17 +338,8 @@ def handle_upload(restaurant_id):
                 if file_ext not in [".png", ".jpg", ".jpeg"] or \
                     file_ext != validate_image(uploaded_file.stream):
                     return '', 400
-                
-                if file_ext == ".png":
-                    file = FileStorage(uploaded_file, filename, content_type="image/png")
-                elif file_ext == ".jpg":
-                    file = FileStorage(uploaded_file, filename, content_type="image/jpg") 
-                elif file_ext == ".jpeg":
-                    file = FileStorage(uploaded_file, filename, content_type="image/jpg") 
-                
-                files.add(filename, file)
-
-        upload_photos(restaurant_id, files)
+                uploaded_file.save(os.path.join("./monolith/static/uploads/" + str(restaurant_id), filename))
+        
         return redirect("/restaurants/mine")
 
     return render_template("upload_photos.html", id=restaurant_id)
@@ -364,7 +353,7 @@ def create_restaurant():
     form = CreateRestaurantForm()
     if request.method == "POST":
         if form.validate_on_submit():
-            precautions = [v for k, v in form.precautions]
+            precautions = [v for k, v in form.prec_measures.data]
             new_restaurant = {
                 "closing_hours": form.closing_hours.data,
                 "cuisine_type": form.cuisine_type.data,

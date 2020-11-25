@@ -18,20 +18,6 @@ def register_restaurant(restaurant):
     return res.status_code
 
 
-@write_request_breaker
-def upload_photos(restaurant_id, photos):
-    res = requests.post(
-        f"{current_app.config['URL_API_RESTAURANT']}restaurants/{restaurant_id}/upload",
-        files=photos,
-        timeout=(
-            current_app.config["READ_TIMEOUT"],
-            current_app.config["WRITE_TIMEOUT"],
-        ),
-    )
-
-    return res.status_code
-
-
 @read_request_breaker
 def get_restaurant_by_id(id):
     res = requests.get(

@@ -31,11 +31,14 @@ def check_permission(booking_number, operator_id, restaurant_id):
 
 @write_request_breaker
 def confirm_checkin(checkin_list):
+    print()
     res = requests.post(
-        f"{current_app.config['URL_API_BOOKING']}bookings/checkin",
+        f"{current_app.config['URL_API_BOOKING']}reservations/checkin",
         json = checkin_list,
         timeout = timeout
     )
+
+    return res
 
 
 @read_request_breaker
@@ -56,3 +59,12 @@ def get_users_reservation(booking_number):
     )
 
     return res.json() 
+
+@write_request_breaker
+def delete_reservation(booking_number):
+    res = requests.delete(
+        f"{current_app.config['URL_API_BOOKING']}/reservations/{booking_number}",
+        timeout = timeout
+    )
+
+    return res.status_code

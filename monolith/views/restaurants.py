@@ -702,12 +702,12 @@ def operator_checkin_reservation(restaurant_id, booking_number):
 
     if request.method == "POST":
         checkin = {
-            "booking_number": booking_number,
+            "booking_number": int(booking_number),
             "user_list": []
         }
         user_list = checkin["user_list"]
         for user_id in request.form.getlist("people"):
-            user_list.append({"user_id": user_id})
+            user_list.append({"user_id": int(user_id)})
         
         api.confirm_checkin(checkin)
 
@@ -745,24 +745,13 @@ def operator_checkin_reservation(restaurant_id, booking_number):
 @login_required
 def operator_delete_reservation(restaurant_id, booking_number):
 
-    allow_operation = (
-        db.session.query(Booking)
-        .join(Table)
-        .join(Restaurant)
-        .join(Operator)
-        .filter(
-            Booking.booking_number == booking_number, Operator.id == current_user.id
-        )
-        .first()
-    )
-    if allow_operation is None:  # check if booking exisist
+    if api.check_permission(booking_number, current_user.id, restaurant_id) == False:  # check if operator can see the page
         flash("Operation denied")
         return redirect(
             url_for(".operator_reservations_list", restaurant_id=restaurant_id)
         )
 
-    db.session.query(Booking).filter_by(booking_number=booking_number).delete()
-    db.session.commit()
+    api.delete_reservation(booking_number)
 
     flash("Reservation deleted", category="success")
     return redirect(url_for(".operator_reservations_list", restaurant_id=restaurant_id))

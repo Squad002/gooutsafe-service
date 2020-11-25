@@ -167,8 +167,8 @@ def trace_contacts(user, interval, send_email=False):
                     mail_body_covid_19_operator_booking_alert.format(
                         operator.firstname,
                         restaurant.name,
-                        user_booking.id,
-                        user_booking.table.name,
+                        user_booking["id"],
+                        table["name"],
                     ),
                 )
 

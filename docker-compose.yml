@@ -31,10 +31,38 @@ services:
         condition: on-failure
     depends_on:
       - user-service-db
+      - restaurant-service
     expose:
       - "5000"
     environment:
       - DATABASE_URI=mysql+pymysql://gooutsafe:my-secret-pw@user-service-db/gooutsafe
+
+  restaurant-service:
+    image: restaurant-service:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    depends_on:
+      - restaurant-service-db
+    expose:
+      - "5000"
+    environment:
+      - DATABASE_URI=mysql+pymysql://gooutsafe:my-secret-pw@restaurant-service-db/gooutsafe
+
+  booking-service:
+    image: booking-service:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    depends_on:
+      - booking-service-db
+      - restaurant-service
+    expose:
+      - "5000"
+    environment:
+      - DATABASE_URI=mysql+pymysql://gooutsafe:my-secret-pw@booking-service-db/gooutsafe
 
   # THIRD-PARTY SERVICES
 
@@ -52,13 +80,25 @@ services:
   #   healthcheck:
   #     test: ["CMD", "curl", "-f", "http://localhost:9200"]
 
+  celery-service:
+    image: "celery-service:latest"
+    deploy:
+      restart_policy:
+        condition: on-failure
+    depends_on:
+      - "restaurant-service"
+    expose:
+      - "5000"
+    env_file:
+      - .env.docker
+
   redis:
     image: "redis:6.0.8-alpine"
     deploy:
       restart_policy:
         condition: on-failure
-    ports:
-      - "6379:6379"
+    expose:
+      - "6379"
 
   # DATABASES
 
@@ -88,6 +128,34 @@ services:
     env_file:
       - .env.docker
 
+  restaurant-service-db:
+    image: "mysql:8"
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: --default-authentication-plugin=mysql_native_password
+    expose:
+      - "3306"
+    volumes:
+      - restaurant-service-data:/var/lib/mysql
+    env_file:
+      - .env.docker
+
+  booking-service-db:
+    image: "mysql:8"
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: --default-authentication-plugin=mysql_native_password
+    expose:
+      - "3306"
+    volumes:
+      - booking-service-data:/var/lib/mysql
+    env_file:
+      - .env.docker
+
 volumes:
   database-data:
   user-service-data:
+  restaurant-service-data:
+  booking-service-data:

@@ -54,7 +54,6 @@ def load_user(user_id):
     elif session["role"] == "authority":
         user_data = api.get_authority_by_id(user_id)
 
-
     user = LoginUser(user_data)
     user.is_authenticated = True
     user.is_anonymous = False

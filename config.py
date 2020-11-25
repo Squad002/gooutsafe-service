@@ -85,6 +85,7 @@ class Config:
         "ignore": ["^/static/.*"],
     }
 
+    # Services
     URL_API_USER = os.environ.get("URL_API_USER") or "http://localhost:5001/"
     URL_API_RESTAURANT = os.environ.get("URL_API_RESTAURANT") or "http://localhost:5003/"
     READ_TIMEOUT = os.environ.get("READ_TIMEOUT") or 3.05

@@ -61,7 +61,7 @@ def get_restaurants():
 @read_request_breaker
 def get_restaurants_elastic(query, page=1, perpage=20):
     res = requests.get(
-        f"{current_app.config['URL_API_RESTAURANT']}restaurants?query={query}&page={page}&perpage={perpage}", timeout=(
+        f"{current_app.config['URL_API_RESTAURANT']}restaurants?q={query}&page={page}&perpage={perpage}", timeout=(
             current_app.config["READ_TIMEOUT"],
             current_app.config["WRITE_TIMEOUT"],
         )

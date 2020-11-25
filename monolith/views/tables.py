@@ -1,3 +1,4 @@
+from logging import fatal
 from flask.globals import session
 from flask.helpers import flash
 from flask import Blueprint, redirect, render_template, request, url_for, abort
@@ -10,10 +11,10 @@ from monolith.services.forms import CreateTableForm
 import flask
 
 
-tables = Blueprint("tables", __name__)
+#tables = Blueprint("tables", __name__)
 
 
-@tables.route("/restaurants/<restaurant_id>/tables")
+""" @tables.route("/restaurants/<restaurant_id>/tables", methods=["GET", "POST"])
 @login_required
 @operator_required
 def _tables(restaurant_id):
@@ -21,10 +22,8 @@ def _tables(restaurant_id):
     
     if status != 204:
         abort(status)
-    
     alltables = tables_list(restaurant_id)
 
-    print(alltables)
     return (
         render_template(
             "tables.html",
@@ -32,8 +31,7 @@ def _tables(restaurant_id):
             base_url=request.base_url,
         ),
         status,
-    ) 
-
+    ) """
 
 
 @tables.route("/restaurants/<restaurant_id>/tables/new", methods=["GET", "POST"])
@@ -64,7 +62,6 @@ def create_table(restaurant_id):
             status = 400
 
     return render_template("create_table.html", form=form), status
-
 
 @tables.route(
     "/restaurants/<restaurant_id>/tables/edit/<table_id>",

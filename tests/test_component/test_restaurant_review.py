@@ -1,3 +1,4 @@
+from sqlalchemy.sql.operators import op
 from tests import data, helpers
 from tests.fixtures import app, client, db
 from urllib.parse import urlparse
@@ -8,12 +9,16 @@ from urllib.parse import urlparse
 
 def test_user_should_see_review_form(client, db):
     helpers.create_user(client)
-    helpers.login_user(client)
-    helpers.create_restaunt(client)
+    helpers.create_operator(client)
+    helpers.login_operator(client)
+    helpers.create_restaurant(client)
+    helpers.logout(client)
 
+    helpers.login_user(client)
     res = visit_restaurant_page(client)
 
     assert res.status_code == 200
+    print(res.data)
     assert b"Add your review" in res.data
     assert b"Your rating" in res.data
     assert b"Your review" in res.data
@@ -21,9 +26,12 @@ def test_user_should_see_review_form(client, db):
 
 def test_user_should_create_review(client, db):
     helpers.create_user(client)
-    helpers.login_user(client)
-    helpers.create_restaunt(client)
+    helpers.create_operator(client)
+    helpers.login_operator(client)
+    helpers.create_restaurant(client)
+    helpers.logout(client)
 
+    helpers.login_user(client)
     res = create_review(client)
 
     assert res.status_code == 200
@@ -57,10 +65,16 @@ def test_user_should_create_review(client, db):
 
 
 def test_user_should_create_review_if_already_did(client, db):
+    helpers.create_operator(client)
+    helpers.login_operator(client)
+    helpers.create_restaurant(client)
+    helpers.logout(client)
+
     helpers.create_user(client)
     helpers.login_user(client)
-    helpers.create_restaunt(client)
+   
 
+    helpers.login_user(client)
     create_review(client)
     res = create_review(client, rating=3)
 
@@ -71,9 +85,14 @@ def test_user_should_create_review_if_already_did(client, db):
 def test_user_should_not_create_review_when_message_is_less_than_30_character(
     client, db
 ):
+    helpers.create_operator(client)
+    helpers.login_operator(client)
+    helpers.create_restaurant(client)
+    helpers.logout(client)
+
+
     helpers.create_user(client)
     helpers.login_user(client)
-    helpers.create_restaunt(client)
 
     res = client.post(
         "/restaurants/1",
@@ -120,8 +139,12 @@ def test_user_should_not_create_review_when_message_is_less_than_30_character(
 
 def test_authority_should_not_see_the_review_form(client, db):
     helpers.create_health_authority(client)
+    
+    helpers.create_operator(client)
+    helpers.login_operator(client)
+    helpers.create_restaurant(client)
+    helpers.logout(client)
     helpers.login_authority(client)
-    helpers.create_restaunt(client)
 
     res = visit_restaurant_page(client)
 
@@ -133,9 +156,14 @@ def test_authority_should_not_see_the_review_form(client, db):
 
 # Here the HA cannot see the form, but if it knows the endpoint, then it still can make a request
 def test_authority_should_not_create_review(client, db):
+
+    helpers.create_operator(client)
+    helpers.login_operator(client)
+    helpers.create_restaurant(client)
+    helpers.logout(client)
+
     helpers.create_health_authority(client)
     helpers.login_authority(client)
-    helpers.create_restaunt(client)
 
     res = create_review(client)
 
@@ -146,7 +174,7 @@ def test_authority_should_not_create_review(client, db):
 def test_operator_should_not_see_the_review_form(client, db):
     helpers.create_operator(client)
     helpers.login_operator(client)
-    helpers.create_restaunt(client)
+    helpers.create_restaurant(client)
 
     res = visit_restaurant_page(client)
 
@@ -160,7 +188,7 @@ def test_operator_should_not_see_the_review_form(client, db):
 def test_operator_should_not_create_review(client, db):
     helpers.create_operator(client)
     helpers.login_operator(client)
-    helpers.create_restaunt(client)
+    helpers.create_restaurant(client)
 
     res = create_review(client)
 
@@ -169,7 +197,11 @@ def test_operator_should_not_create_review(client, db):
 
 
 def test_anonymous_user_should_see_review_form(client, db):
-    helpers.create_restaunt(client)
+    helpers.create_operator(client)
+    helpers.login_operator(client)
+    helpers.create_restaurant(client)
+    helpers.logout(client)
+
 
     res = visit_restaurant_page(client)
 
@@ -182,7 +214,10 @@ def test_anonymous_user_should_see_review_form(client, db):
 def test_anonymous_user_should_be_redirected_on_login_page_when_create_review(
     client, db
 ):
-    helpers.create_restaunt(client)
+    helpers.create_operator(client)
+    helpers.login_operator(client)
+    helpers.create_restaurant(client)
+    helpers.logout(client)
 
     res = create_review(client, redirect=False)
 

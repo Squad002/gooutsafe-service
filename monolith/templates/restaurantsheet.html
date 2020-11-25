@@ -162,13 +162,13 @@
 <section>
     <div class="ui medium comments">
         <div class="comment">
-            <a class="avatar">
+            <!-- <a class="avatar">
                 <img loading="lazy" src={{ review.user.get_avatar_link() }}>
-            </a>
+            </a> -->
             <div class="content">
-                <div class="author">{{ review.user.firstname }}</div>
+                <div class="author">{{ review.firstname }}</div>
                 <div class="metadata">
-                    <div class="date">{{ review.created.strftime("%d %B %Y") }}</div>
+                    <!-- <div class="date">{{ review.created.strftime("%d %B %Y") }}</div> -->
                     <div class="rating">
                         <i class="star icon"></i>
                         {{ review.rating }}

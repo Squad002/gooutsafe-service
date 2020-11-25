@@ -1,4 +1,4 @@
-from flask.globals import session
+""" from flask.globals import session
 from flask.helpers import flash
 from flask import Blueprint, redirect, render_template, request, url_for, abort
 from flask_login import current_user
@@ -137,3 +137,4 @@ def show_menu(restaurant_id, menu_id):
         abort(404)
 
     return render_template("show_menu.html", menu=menu)
+ """

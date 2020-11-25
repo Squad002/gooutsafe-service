@@ -184,7 +184,7 @@ def test_create_table_view_is_available_operator(client, db):
     helpers.create_table(client)
 
     res = client.get("/restaurants/1/tables/new")
-    assert res.status_code == 204
+    assert res.status_code == 200
 
 
 def test_create_table_view_is_notavailable_anonymous(client, db):
@@ -440,7 +440,7 @@ def test_edit_table_view_is_available_operator(client, db):
     helpers.create_table(client)
 
     res = client.get("/restaurants/1/tables/edit/1")
-    assert res.status_code == 204
+    assert res.status_code == 200
 
 
 def test_edit_table_view_is_notavailable_ha(client, db):
@@ -708,7 +708,7 @@ def test_tables_available_operator(client):
     helpers.create_restaurant(client)
 
     res = client.get("/restaurants/1/tables")
-    assert res.status_code == 204
+    assert res.status_code == 200
 
 
 def test_tables_notavailable_ha(client):
@@ -733,7 +733,7 @@ def test_tables(client, db):
     res = client.get("/restaurants/1/tables")
     tables = tables_list(1)
 
-    assert res.status_code == 204
+    assert res.status_code == 200
     for table in tables:
         assert bytes(table["name"], "utf-8") in res.data
 
@@ -795,7 +795,7 @@ def test_create_menu_isavailable_operator(client, db):
 
     res = client.get("/restaurants/1/menus/new")
 
-    assert res.status_code == 204
+    assert res.status_code == 200
 
 
 def test_create_menu_isnotavailable_ha(client, db):

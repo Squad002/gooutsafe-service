@@ -2,7 +2,7 @@ version: "3.4"
 
 services:
   gooutsafe:
-    image: gooutsafe-service:latest
+    image: gooutsafe/entrypoint:latest
     deploy:
       restart_policy:
         condition: on-failure
@@ -21,10 +21,25 @@ services:
         source: ./monolith/
         target: /home/gooutsafe/monolith/
 
+  # GATEWAYS
+
+  api-gateway:
+    image: gooutsafe/api-gateway:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    depends_on:
+      - user-service
+      - restaurant-service
+      - booking-service
+    expose:
+      - "5000"
+
   # SERVICES
 
   user-service:
-    image: user-service:latest
+    image: gooutsafe/user-service:latest
     deploy:
       replicas: 1
       restart_policy:
@@ -34,11 +49,13 @@ services:
       - restaurant-service
     expose:
       - "5000"
+    env_file:
+      - .env.docker
     environment:
       - DATABASE_URI=mysql+pymysql://gooutsafe:my-secret-pw@user-service-db/gooutsafe
 
   restaurant-service:
-    image: restaurant-service:latest
+    image: gooutsafe/restaurant-service:latest
     deploy:
       replicas: 1
       restart_policy:
@@ -47,11 +64,13 @@ services:
       - restaurant-service-db
     expose:
       - "5000"
+    env_file:
+      - .env.docker
     environment:
       - DATABASE_URI=mysql+pymysql://gooutsafe:my-secret-pw@restaurant-service-db/gooutsafe
 
   booking-service:
-    image: booking-service:latest
+    image: gooutsafe/booking-service:latest
     deploy:
       replicas: 1
       restart_policy:
@@ -59,6 +78,8 @@ services:
     depends_on:
       - booking-service-db
       - restaurant-service
+    env_file:
+      - .env.docker
     expose:
       - "5000"
     environment:
@@ -66,22 +87,22 @@ services:
 
   # THIRD-PARTY SERVICES
 
-  # elastic-search:
-  #   image: "docker.elastic.co/elasticsearch/elasticsearch:7.10.0"
-  #   deploy:
-  #     restart_policy:
-  #       condition: on-failure
-  #       delay: 5s
-  #   environment:
-  #     - "discovery.type=single-node"
-  #   expose:
-  #     - "9200"
-  #     - "9300"
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:9200"]
+  elastic-search:
+    image: "docker.elastic.co/elasticsearch/elasticsearch:7.10.0"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+    environment:
+      - "discovery.type=single-node"
+    expose:
+      - "9200"
+      - "9300"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
 
   celery-service:
-    image: "celery-service:latest"
+    image: gooutsafe/celery-service:latest
     deploy:
       restart_policy:
         condition: on-failure

@@ -5,10 +5,7 @@ from monolith import api
 
 import requests
 
-timeout = (
-    current_app.config["READ_TIMEOUT"],
-    current_app.config["WRITE_TIMEOUT"],
-)
+
 
 @write_request_breaker
 def make_booking(confirmed_booking, end_booking, restaurant_id, seats, start_booking, user_id):
@@ -24,7 +21,10 @@ def make_booking(confirmed_booking, end_booking, restaurant_id, seats, start_boo
     res = requests.post(
         f"{current_app.config['URL_API_BOOKING']}bookings",
         json = booking,
-        timeout = timeout
+        timeout = (
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        )
     )
 
     return res
@@ -33,7 +33,10 @@ def make_booking(confirmed_booking, end_booking, restaurant_id, seats, start_boo
 def get_booking_by_id(booking_number):
     res = requests.get(
         f"{current_app.config['URL_API_BOOKING']}bookings?booking_number={booking_number}",
-        timeout = timeout
+        timeout = (
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        )
     )
 
     if not res.json():
@@ -47,7 +50,10 @@ def confirm_booking(users_list):
     res = requests.post(
         f"{current_app.config['URL_API_BOOKING']}booking/confirm",
         json = users_list,
-        timeout = timeout
+        timeout = (
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        )
     )
 
     return res
@@ -57,7 +63,10 @@ def confirm_booking(users_list):
 def user_booking_list(user_id):
     res = requests.get(
         f"{current_app.config['URL_API_BOOKING']}bookings?user_id={user_id}",
-        timeout = timeout
+        timeout = (
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        )
     )
 
     restaurants_bookings_list = []
@@ -74,7 +83,12 @@ def user_booking_list(user_id):
 def delete_booking(user_id, booking_number):
     res = requests.delete(
         f"{current_app.config['URL_API_BOOKING']}bookings/{booking_number}?user_id={user_id}",
-        timeout = timeout
+        timeout = (
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        )
     )
 
     return res.status_code
+
+

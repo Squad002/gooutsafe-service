@@ -23,19 +23,28 @@ def create_menu(restaurant_id):
         abort(403)
         
     choices = [
-            "ETHNIC",
-            "PUB",
-            "FAST_FOOD"
+            "PIZZAS",
+            "STARTERS",
+            "DRINKS",
+            "MAIN_COURSES"
+            "SIDE_DISHES",
+            "DESSERTS",
+            "BURGERS",
+            "SANDWICHES"
         ]
     values = [
-        "Ethnic",
-        "Pub",
-        "Fast Food"
+        "Pizzas",
+        "Starters",
+        "Main courses"
+        "Side dishes",
+        "Drinks",
+        "Sandwiches",
+        "Burgers",
+        "Desserts"
     ]
 
     if request.method == "POST":
         menu_name = request.form["menu_name"]
-
         if menu_name == "":
             flash("No empty menu name!", category="error")
             status = 400
@@ -66,6 +75,7 @@ def create_menu(restaurant_id):
 
                 if not is_float:
                     flash("Not a valid price number", category="error")
+                    
                     status = 400
                 elif food["price"] < 0:
                     flash("No negative values!", category="error")
@@ -76,20 +86,22 @@ def create_menu(restaurant_id):
                 elif food["category"] not in choices:
                     flash("Wrong category selected!", category="error")
                     status = 400
-                elif food["names"] in food_names:
-                    flash("No duplicate food name!", category="error")
+                elif food["name"] in food_names:
+                    flash("No duplicate foods", category="error")
                     status = 400
                 else:
-                    menu.foods.append(food)
-                    food_names.add(food.name)
+                    menu["foods"].append(food)
+                    food_names.add(food["name"])
+                    status = 200
 
-                if status == 200:
-                    status = register_menu(menu)
 
-                    if status == 201:
-                        return redirect("/restaurants/" + str(restaurant_id))
-                    else:
-                        flash("A menu with the same name already exists")
+            status = register_menu(menu)
+            print(status)
+
+            if status == 204:
+                return redirect("/restaurants/" + str(restaurant_id))
+            else:
+                flash("A menu with the same name already exists")
 
     if zipped or menu_name:
         zip_to_send = zip(

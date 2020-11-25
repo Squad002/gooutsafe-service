@@ -7,6 +7,7 @@ from monolith.services.auth import operator_required, user_required
 from monolith.api.tables import register_table, tables_list, patch_table, remove_table
 from monolith.api.restaurants import permissions
 from monolith.services.forms import CreateTableForm
+import flask
 
 tables = Blueprint("tables", __name__)
 
@@ -16,10 +17,10 @@ tables = Blueprint("tables", __name__)
 @operator_required
 def _tables(restaurant_id):
     status = permissions(current_user.id, restaurant_id)
-
+    
     if status != 204:
         abort(status)
-        
+    
     alltables = tables_list(restaurant_id)
         
     return (
@@ -82,7 +83,7 @@ def edit_table(restaurant_id, table_id):
                 "seats" : form.seats.data
             }
 
-            status = patch_table(table)
+            status = patch_table(table, int(table_id))
             if status == 204:
                 return redirect("/restaurants/" + restaurant_id + "/tables")
             elif status == 400:

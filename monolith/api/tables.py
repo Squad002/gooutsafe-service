@@ -19,9 +19,9 @@ def register_table(table):
 
 
 @write_request_breaker
-def patch_table(table):
+def patch_table(table, id):
     res = requests.patch(
-        f"{current_app.config['URL_API_RESTAURANT']}tables",
+        f"{current_app.config['URL_API_RESTAURANT']}tables/{id}",
         json=table,
         timeout=(
             current_app.config["READ_TIMEOUT"],
@@ -56,3 +56,19 @@ def tables_list(restaurant_id):
     )
 
     return res.json()
+
+
+@read_request_breaker
+def get_table_by_id(table_id):
+    res = requests.get(
+        f"{current_app.config['URL_API_RESTAURANT']}tables/{table_id}",
+        timeout=(
+            current_app.config["READ_TIMEOUT"],
+            current_app.config["WRITE_TIMEOUT"],
+        ),
+    )
+
+    if res.status_code == 200:
+        return res.json()
+    else:
+        return None

@@ -123,7 +123,6 @@ def test_anagraphic_form_user(client):
     assert res.status_code == 200
 
     res = client.get("/me")
-    print(res.data)
     assert b"Hattori" in res.data
     assert b"Hanzo" in res.data
     assert b"HTTHNZ45B02D612A" in res.data

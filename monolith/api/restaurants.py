@@ -26,7 +26,11 @@ def get_restaurant_by_id(id):
             current_app.config["WRITE_TIMEOUT"],
         )
     )
-    return res.json()[0]
+
+    if not res.json():
+        return None
+    else:
+        return res.json()[0]
 
 
 @read_request_breaker

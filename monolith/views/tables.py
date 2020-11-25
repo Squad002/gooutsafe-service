@@ -13,7 +13,7 @@ import flask
 tables = Blueprint("tables", __name__)
 
 
-""" @tables.route("/restaurants/<restaurant_id>/tables")
+@tables.route("/restaurants/<restaurant_id>/tables")
 @login_required
 @operator_required
 def _tables(restaurant_id):
@@ -32,7 +32,7 @@ def _tables(restaurant_id):
             base_url=request.base_url,
         ),
         status,
-    ) """
+    ) 
 
 
 

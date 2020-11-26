@@ -1,12 +1,13 @@
+from flask import current_app
 from flask.globals import session
 from flask.helpers import flash
+from flask_login import current_user, login_required
 from flask import Blueprint, redirect, render_template, request, url_for, abort
 from monolith.services.auth import (
     operator_required,
     user_required,
 )
 from monolith import api
-from flask_login import current_user, login_required
 from monolith.services.forms import (
     CreateRestaurantForm,
     CreateTableForm,
@@ -16,11 +17,8 @@ from monolith.services.forms import (
     ChooseReservationData,
 )
 from datetime import date, timedelta
-from sqlalchemy import func
-from flask_login import current_user
 from werkzeug.utils import secure_filename
 from monolith import api
-from flask_login import current_user
 
 import os
 import imghdr
@@ -76,6 +74,12 @@ def operator_restaurants(message=""):
     )
 
 
+@restaurants.route("/restaurants/map")
+def restaurant_map():
+    pass
+
+
+
 @restaurants.route("/restaurants/<restaurant_id>", methods=["GET", "POST"])
 def restaurant_sheet(restaurant_id):
     restaurant = api.get_restaurant_by_id(restaurant_id)
@@ -94,7 +98,9 @@ def restaurant_sheet(restaurant_id):
         user = api.get_user_by_id(review["user_id"])
         if user:
             review["name"] = user["firstname"]
-
+            review["avatar_link"] = current_app.config["AVATAR_PROVIDER"].format(seed=user["avatar_id"])
+            review["created"] = review["created"][0:10]
+                
     if form.is_submitted():
         if current_user.is_anonymous:
             flash("To review the restaurant you need to login.")
@@ -104,10 +110,10 @@ def restaurant_sheet(restaurant_id):
                 flash("Only a logged user can review a restaurant.")
             else:
                 review = {
-                    "message" : form.message.data,
-                    "rating" : form.rating.data,
-                    "user_id" : current_user.id,
-                    "restaurant_id" : int(restaurant_id)
+                    "message": form.message.data,
+                    "rating": form.rating.data,
+                    "user_id": current_user.id,
+                    "restaurant_id": int(restaurant_id)
                 }
                 status = api.register_review(review)
                 # Check if the user already did a review

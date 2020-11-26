@@ -92,25 +92,30 @@ def unsubscribe():
         return redirect("/login/user")
 
     deleted = False
+    marked = False
 
     if session["role"] == "user":
         user = api.get_user_by_email(current_user.email)
 
         if user["marked"]:
+            marked = True
             flash("Positive users cannot be deleted", category="info")
             return redirect("/")
-
-        deleted = api.delete_user(user["id"])
+        else:
+            deleted = api.delete_user(user["id"])
     elif session["role"] == "operator":
         operator = api.get_operator_by_email(current_user.email)
         deleted = api.delete_operator(operator["id"])
         # TODO add delete of the restaurants or archive them.
 
-    if deleted:
-        current_app.logger.info("The user {} deleted him from the app.")
-        flash("Your account has been deleted. We will miss you.", category="success")
-    else:
-        flash("An error occurred with our server", category="error")
+    if not marked:
+        if deleted:
+            current_app.logger.info("The user {} deleted him from the app.")
+            flash(
+                "Your account has been deleted. We will miss you.", category="success"
+            )
+        else:
+            flash("An error occurred with our server", category="error")
 
     logout_user()
     return redirect("/")

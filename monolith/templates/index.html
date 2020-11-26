@@ -21,7 +21,7 @@
             var marker = L.marker([restaurant["lat"], restaurant["lon"]]);
             let link = '<a href="' + {{ url_for("restaurants._restaurants")
                 | tojson
-        }} + '/' + restaurant[4] + '"> Restaurant Details </a>'
+        }} + '/' + restaurant["id"] + '"> Restaurant Details </a>'
     marker.bindPopup(link).openPopup();
     marker.bindTooltip(restaurant["name"])
     marker.addTo(map)
@@ -38,7 +38,7 @@
 {% if current_user.is_authenticated and session['role'] == "user" %}
 Hi {{ current_user.firstname }}!
 
-<div class="ui divider"></div>
+<div class="ui divider hidden"></div>
 
 <div class="row">
     <h2 class="ui dividing header">Restaurants</h2>
@@ -123,7 +123,7 @@ Hi {{ current_user.firstname }}!
     <section>
         <div id="map" style="height: 400px;"></div>
         <script>
-            createMap({{ restaurants_list | tojson }})
+            createMap({{ restaurants_list | tojson}})
         </script>
     </section>
 </div>

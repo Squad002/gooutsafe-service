@@ -53,7 +53,7 @@
                         <a href="/login/user" class="item">Login</a>
                         {% else %}
                         {% if session["role"] == "user" or "operator" %}
-                        <a href="/me" class="item">{{ session["name"] }}</a>
+                        <a href="/me" class="item">{{ session['name'][0]|upper}}{{session['name'][1:] }}</a>
                         {% else %}
                         {{ session["name"] }}
                         {% endif %}

@@ -25,7 +25,9 @@ def app(testrun_uid):
 
     # Teardown DBs on the microservices
     res = requests.delete("http://localhost:5001/testing/services/user/db")
+    requests.delete("http://localhost:5002/testing/services/booking/db")
     requests.delete("http://localhost:5003/testing/services/restaurant/db")
+
     
 
 @pytest.fixture

@@ -1,7 +1,4 @@
-from monolith.api.operators import patch_operator
-from requests.api import request
-from monolith.api.users import login_user, patch_user
-from monolith.api.operators import login_operator, patch_operator
+from monolith import api
 from flask import Blueprint, render_template, session, redirect
 from flask_login import login_required
 from flask.helpers import flash
@@ -16,7 +13,6 @@ from monolith.services.forms import (
 
 me = Blueprint("me", __name__)
 
-from monolith import api
 
 
 @me.route("/me")
@@ -38,9 +34,9 @@ def change_password():
     form = ChangePasswordForm()
 
     if form.validate_on_submit():
-        if login_user(current_user.email, form.old_password.data):
+        if api.login_user(current_user.email, form.old_password.data):
             if form.password_confirm.data == form.new_password.data:
-                patch_user(current_user.id, {"password": form.new_password.data})
+                api.patch_user(current_user.id, {"password": form.new_password.data})
                 flash("Operation successful!")
         else:
             flash("You've typed the wrong password!")
@@ -55,9 +51,9 @@ def change_anagraphic():
 
     if form.validate_on_submit():
         if session["role"] == "operator":
-            if login_operator(current_user.email, form.password.data):
+            if api.login_operator(current_user.email, form.password.data):
                 # TODO add patch for birthdate to user service api
-                res = patch_operator(
+                res = api.patch_operator(
                     current_user.id,
                     {
                         "firstname": form.firstname.data,
@@ -69,9 +65,9 @@ def change_anagraphic():
             else:
                 flash("You've typed the wrong password!")
         if session["role"] == "user":
-            if login_user(current_user.email, form.password.data):
+            if api.login_user(current_user.email, form.password.data):
                 # TODO add patch for birthdate to user service api
-                res = patch_user(
+                res = api.patch_user(
                     current_user.id,
                     {
                         "firstname": form.firstname.data,
@@ -92,8 +88,8 @@ def change_contacts():
     form = ChangeContactForm()
 
     if form.validate_on_submit():
-        if login_user(current_user.email, form.password.data):
-            patch_user(
+        if api.login_user(current_user.email, form.password.data):
+            api.patch_user(
                 current_user.id,
                 {"email": form.email.data, "phonenumber": str(form.phonenumber.data)},
             )

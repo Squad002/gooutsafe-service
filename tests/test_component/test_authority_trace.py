@@ -37,11 +37,6 @@ def test_ha_should_trace_through_user_customer_same_time(client):
     helpers.booking_confirm(client)  #!
     helpers.logout(client)
 
-    b1 = db.session.query(Booking).all()[1]
-    print(b1.checkin)
-    print("USER: ", b1.user_id)
-    print("BN: ", b1.booking_number)
-
     # Check-in
     helpers.login_operator(client)
     helpers.checkin_booking(client)

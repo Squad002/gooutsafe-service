@@ -1,4 +1,4 @@
-from .fixtures import app, client, db
+from .fixtures import app, client
 from monolith.api.operators import get_operator_by_id
 from urllib.parse import urlparse
 
@@ -8,7 +8,7 @@ def test_create_operator_view_is_available(client):
     assert res.status_code == 200
 
 
-def test_create_operator_view(client, db):
+def test_create_operator_view(client):
     res = add_operator(client)
     res = get_operator_by_id(1)
 

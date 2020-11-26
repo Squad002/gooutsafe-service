@@ -1,13 +1,13 @@
 from sqlalchemy.sql.operators import op
 from tests import data, helpers
-from tests.fixtures import app, client, db
+from tests.fixtures import app, client
 from urllib.parse import urlparse
 
 
 # TODO merge with the restaurant page test
 
 
-def test_user_should_see_review_form(client, db):
+def test_user_should_see_review_form(client):
     helpers.create_user(client)
     helpers.create_operator(client)
     helpers.login_operator(client)
@@ -23,7 +23,7 @@ def test_user_should_see_review_form(client, db):
     assert b"Your review" in res.data
 
 
-def test_user_should_create_review(client, db):
+def test_user_should_create_review(client):
     helpers.create_user(client)
     helpers.create_operator(client)
     helpers.login_operator(client)
@@ -61,7 +61,7 @@ def test_user_should_create_review(client, db):
 #     assert b'<div class="content">3</div>' in res.data
 
 
-def test_user_should_create_review_if_already_did(client, db):
+def test_user_should_create_review_if_already_did(client):
     helpers.create_operator(client)
     helpers.login_operator(client)
     helpers.create_restaurant(client)
@@ -79,7 +79,7 @@ def test_user_should_create_review_if_already_did(client, db):
 
 
 def test_user_should_not_create_review_when_message_is_less_than_30_character(
-    client, db
+    client
 ):
     helpers.create_operator(client)
     helpers.login_operator(client)
@@ -132,7 +132,7 @@ def test_user_should_not_create_review_when_message_is_less_than_30_character(
 #     assert b"The number of stars must be between 1 and 5" in res.data
 
 
-def test_authority_should_not_see_the_review_form(client, db):
+def test_authority_should_not_see_the_review_form(client):
     helpers.create_health_authority(client)
 
     helpers.create_operator(client)
@@ -150,7 +150,7 @@ def test_authority_should_not_see_the_review_form(client, db):
 
 
 # Here the HA cannot see the form, but if it knows the endpoint, then it still can make a request
-def test_authority_should_not_create_review(client, db):
+def test_authority_should_not_create_review(client):
 
     helpers.create_operator(client)
     helpers.login_operator(client)
@@ -166,7 +166,7 @@ def test_authority_should_not_create_review(client, db):
     assert b"Only a logged user can review a restaurant." in res.data
 
 
-def test_operator_should_not_see_the_review_form(client, db):
+def test_operator_should_not_see_the_review_form(client):
     helpers.create_operator(client)
     helpers.login_operator(client)
     helpers.create_restaurant(client)
@@ -180,7 +180,7 @@ def test_operator_should_not_see_the_review_form(client, db):
 
 
 # Here the Operator cannot see the form, but if it knows the endpoint, then it still can make a request
-def test_operator_should_not_create_review(client, db):
+def test_operator_should_not_create_review(client):
     helpers.create_operator(client)
     helpers.login_operator(client)
     helpers.create_restaurant(client)
@@ -191,7 +191,7 @@ def test_operator_should_not_create_review(client, db):
     assert b"Only a logged user can review a restaurant." in res.data
 
 
-def test_anonymous_user_should_see_review_form(client, db):
+def test_anonymous_user_should_see_review_form(client):
     helpers.create_operator(client)
     helpers.login_operator(client)
     helpers.create_restaurant(client)
@@ -206,7 +206,7 @@ def test_anonymous_user_should_see_review_form(client, db):
 
 
 def test_anonymous_user_should_be_redirected_on_login_page_when_create_review(
-    client, db
+    client
 ):
     helpers.create_operator(client)
     helpers.login_operator(client)

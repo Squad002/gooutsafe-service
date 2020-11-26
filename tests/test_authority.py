@@ -1,4 +1,4 @@
-from .fixtures import app, client, db
+from .fixtures import app, client
 from monolith import api
 
 from urllib.parse import urlparse
@@ -13,7 +13,7 @@ def test_create_authority_view_is_available(client):
     assert res.status_code == 200
 
 
-def test_create_authority_view(client, db):
+def test_create_authority_view(client):
     res = add_authority(client)
 
     fetched_user = api.get_authority_by_email("aslpisa@mail.com")

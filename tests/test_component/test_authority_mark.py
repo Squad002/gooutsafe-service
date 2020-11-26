@@ -331,7 +331,3 @@ def test_ha_should_not_work_with_duration_more_than_sixty_on_phone_number_mark_p
 
 
 # Helpers
-
-
-def are_marks_empty(db):
-    return len(db.session.query(Mark).all()) == 0

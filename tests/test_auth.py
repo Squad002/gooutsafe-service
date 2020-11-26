@@ -1,4 +1,4 @@
-from .fixtures import app, client, db
+from .fixtures import app, client
 from . import helpers
 
 def test_user_correct_login(client):

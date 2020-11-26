@@ -143,48 +143,6 @@ def create_user(client, data=user2):
     )
 
 
-# ! It's here just as a reference. The testing procedure should not need to work directly
-# !     with the database when a view to insert the user is available.
-# TODO in the future if not needed, and the test goes as planned, it can be deleted.
-def insert_user(db, data=user) -> User:
-    temp = User(**data)
-    db.session.add(temp)
-    db.session.commit()
-    return temp
-
-
-def insert_restaurant_db(db, data=restaurant) -> Restaurant:
-    temp = Restaurant(**data)
-    db.session.add(temp)
-    db.session.commit()
-    return temp
-
-
-def insert_precautions(db, precautions=precautions):
-    for p in precautions:
-        db.session.add(Precautions(**p))
-    db.session.commit()
-
-
-def insert_precautions_in_restaurant(
-    db, restaurant: Restaurant, precautions_id=[1, 2, 4]
-):
-    for precaution_id in precautions_id:
-        db.session.add(
-            RestaurantsPrecautions(
-                restaurant_id=restaurant.id, precautions_id=precaution_id
-            )
-        )
-    db.session.commit()
-
-
-def insert_complete_restaurant(db):
-    restaurant = insert_restaurant_db(db)
-    insert_precautions(db)
-    insert_precautions_in_restaurant(db, restaurant=restaurant)
-    return restaurant
-
-
 def create_operator(client, data=operator2):
     return client.post(
         "/register/operator",
@@ -262,13 +220,6 @@ def delete_table(client, restaurant_id=1, table_id=1, data=table):
         data=data,
         follow_redirects=False,
     )
-
-
-def insert_health_authority(db, data=health_authority) -> HealthAuthority:
-    temp = HealthAuthority(**data)
-    db.session.add(temp)
-    db.session.commit()
-    return temp
 
 
 # OTHER

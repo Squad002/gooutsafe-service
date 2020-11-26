@@ -18,11 +18,6 @@ def app(testrun_uid):
 
     yield app
 
-    # Teardown of the DB
-    dba.session.remove()
-    dba.drop_all(app=app)
-    os.unlink(db_path)
-
     # Teardown DBs on the microservices
     res = requests.delete("http://localhost:5001/testing/services/user/db")
     requests.delete("http://localhost:5002/testing/services/booking/db")
@@ -33,7 +28,3 @@ def app(testrun_uid):
 def client(app):
     return app.test_client()
 
-
-@pytest.yield_fixture
-def db(app):
-    yield dba

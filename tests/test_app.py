@@ -1,4 +1,4 @@
-from .fixtures import app, client, db
+from .fixtures import app, client
 
 
 def test_app_exists(app):

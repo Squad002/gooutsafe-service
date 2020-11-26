@@ -48,12 +48,12 @@
             {% for contact in contacts %}
             {% for person in contact.people %}
             <tr>
-                <td>{{ contact.date }}</td>
-                <td>{{ person.firstname }} {{ person.lastname }}</td>
-                <td>{{ person.fiscalcode }}</td>
-                <td>{{ person.email }}</td>
-                <td>{{ person.phonenumber }}</td>
-                {% if person.is_marked() %}
+                <td>{{ contact["date"]}}</td>
+                <td>{{ person["firstname"] }} {{ person["lastname"] }}</td>
+                <td>{{ person["fiscalcode"] }}</td>
+                <td>{{ person["email"] }}</td>
+                <td>{{ person["phonenumber"] }}</td>
+                {% if person["marked"] %}
                 <td class="error"><i class="attention icon"></i>Yes</td>
                 <td class="disabled">
                     <div class="ui small primary disabled button icon">
@@ -64,7 +64,8 @@
                 <td>No</td>
                 <td>
                     <form method="POST" action="/marks/new">
-                        <button class="ui small primary button icon" name="identification" value="{{ person.email }}">
+                        <button class="ui small primary button icon" name="identification"
+                            value="{{ person['email'] }}">
                             <i class="icon checkmark"></i>
                         </button>
                     </form>

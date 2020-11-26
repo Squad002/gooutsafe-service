@@ -18,12 +18,11 @@ def test_ha_should_access_own_new_mark_page(client):
 def test_ha_should_mark_one_user_through_ssn_mark_page(client, db):
     helpers.create_health_authority(client)
     helpers.login_authority(client)
-    user = helpers.insert_user(db)
-    db.session.commit()
+    helpers.create_user(client)
 
     res = client.post(
         "/marks/new",
-        data={"identifier": user.fiscalcode, "duration": 15},
+        data={"identifier": helpers.user2.fiscalcode, "duration": 15},
         follow_redirects=False,
     )
 

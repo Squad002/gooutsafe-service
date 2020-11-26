@@ -48,7 +48,7 @@ def confirm_checkin(checkin_list):
 @read_request_breaker
 def booking_and_checkin(booking_number):
     res = requests.get(
-        f"{current_app.config['URL_API_BOOKING']}/bookings/{booking_number}/checkin",
+        f"{current_app.config['URL_API_BOOKING']}bookings/{booking_number}/checkin",
         timeout = (
             current_app.config["READ_TIMEOUT"],
             current_app.config["WRITE_TIMEOUT"],
@@ -61,7 +61,7 @@ def booking_and_checkin(booking_number):
 @read_request_breaker
 def get_users_reservation(booking_number):
     res = requests.get(
-        f"{current_app.config['URL_API_BOOKING']}/reservations/{booking_number}",
+        f"{current_app.config['URL_API_BOOKING']}reservations/{booking_number}",
         timeout = (
             current_app.config["READ_TIMEOUT"],
             current_app.config["WRITE_TIMEOUT"],
@@ -73,7 +73,7 @@ def get_users_reservation(booking_number):
 @write_request_breaker
 def delete_reservation(booking_number):
     res = requests.delete(
-        f"{current_app.config['URL_API_BOOKING']}/reservations/{booking_number}",
+        f"{current_app.config['URL_API_BOOKING']}reservations/{booking_number}",
         timeout = (
             current_app.config["READ_TIMEOUT"],
             current_app.config["WRITE_TIMEOUT"],

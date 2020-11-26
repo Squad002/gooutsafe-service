@@ -10,8 +10,6 @@ from monolith.models import (
     HealthAuthority,
     Booking,
 )
-from monolith.services.background import tasks
-from monolith.services import mock
 
 import os
 from dotenv import load_dotenv
@@ -22,7 +20,7 @@ if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 
 # APP
-from monolith import create_app, celery, db
+from monolith import create_app, db
 from flask_migrate import Migrate, upgrade
 
 app = create_app(os.getenv("FLASK_CONFIG") or "default")
@@ -33,8 +31,6 @@ migrate = Migrate(app, db)
 def make_shell_context():
     return {
         "db": db,
-        "tasks": tasks,
-        "mock": mock,
         "User": User,
         "Review": Review,
         "Operator": Operator,
@@ -55,5 +51,4 @@ def deploy():
     # upgrade()
 
     # Insert fake data
-    mock.everything()
     Restaurant.force_index()

@@ -98,19 +98,14 @@ def unsubscribe():
 
     if session["role"] == "user":
         user = api.get_user_by_email(current_user.email)
-        
+
         if user["marked"]:
             flash("Positive users cannot be deleted", category="info")
             return redirect("/")
 
         deleted = api.delete_user(user["id"])
     elif session["role"] == "operator":
-        operator = (
-            db.session.query(Operator)
-            .filter(Operator.email == current_user.email)
-            .first()
-        )
-        operator = api.get_user_by_email(current_user.email)
+        operator = api.get_operator_by_email(current_user.email)
         deleted = api.delete_operator(operator["id"])
         # TODO add delete of the restaurants or archive them.
 

@@ -1,11 +1,8 @@
-from monolith.models.login_user import LoginUser
+from monolith.models import LoginUser
 from flask import Blueprint, render_template, redirect, session, flash, current_app
 from flask_login import current_user, login_user, logout_user
-from datetime import date
 
 
-from monolith import db
-from monolith.models import User, Operator, HealthAuthority
 from monolith.services.forms import LoginForm
 from monolith import api
 

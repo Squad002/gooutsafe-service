@@ -1,8 +1,7 @@
 from flask import session, redirect
 from flask_login import current_user
-from monolith import login_manager
-from monolith.models import User, HealthAuthority, Operator, LoginUser
-from monolith import api
+from monolith import api, login_manager
+from monolith.models import LoginUser
 from functools import wraps
 
 

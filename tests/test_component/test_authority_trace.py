@@ -1,7 +1,6 @@
 from ..fixtures import app, client
 from .. import helpers
 from ..data import booking_people, user2, user3, table2
-from monolith.models import Booking
 
 
 def test_ha_should_access_own_trace_page(client):

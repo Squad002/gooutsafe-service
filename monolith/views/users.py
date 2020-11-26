@@ -1,6 +1,5 @@
 from flask import Blueprint, redirect, render_template, current_app, flash
-from monolith import db, redis_client
-from monolith.models import User
+from monolith import redis_client
 from monolith.services.forms import UserForm
 from monolith.services.auth import authority_required
 from monolith.services.breakers import read_request_breaker
@@ -11,7 +10,8 @@ from datetime import datetime
 
 users = Blueprint("users", __name__)
 
-# TODO REMOVE 
+# TODO REMOVE
+
 
 @users.route("/users")
 @authority_required

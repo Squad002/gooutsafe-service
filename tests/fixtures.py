@@ -1,4 +1,4 @@
-from monolith import create_app, db as dba
+from monolith import create_app
 from monolith.services.auth import login_manager
 
 import pytest
@@ -28,7 +28,6 @@ def app(testrun_uid):
     requests.delete("http://localhost:5002/testing/services/booking/db")
     requests.delete("http://localhost:5003/testing/services/restaurant/db")
 
-    
 
 @pytest.fixture
 def client(app):

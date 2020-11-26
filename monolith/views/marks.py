@@ -2,8 +2,6 @@ from sqlalchemy import or_
 from flask import Blueprint, render_template, flash, redirect, request, session
 from flask_login.utils import login_required
 
-from monolith import db
-from monolith.models import User
 from monolith.services.auth import current_user, authority_required
 from monolith.services.forms import AuthorityIdentifyForm
 from monolith import api

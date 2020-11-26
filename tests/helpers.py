@@ -1,12 +1,4 @@
 from datetime import date
-from monolith.models.menu import Menu, Food
-from monolith.models import (
-    User,
-    Restaurant,
-    RestaurantsPrecautions,
-    HealthAuthority,
-    Precautions,
-)
 from tests.data import (
     precautions,
     booking,

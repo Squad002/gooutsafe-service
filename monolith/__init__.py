@@ -1,5 +1,4 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_dropzone import Dropzone
@@ -12,7 +11,6 @@ from elasticsearch import Elasticsearch
 # Debug
 import flask_profiler
 
-db = SQLAlchemy()
 login_manager = LoginManager()
 mail = Mail()
 redis_client = FlaskRedis()
@@ -48,8 +46,6 @@ def create_app(config_name, updated_variables=None):
     app.elasticsearch = Elasticsearch([es_url]) if es_url else None
 
     mail.init_app(app)
-    db.init_app(app)
-    db.create_all(app=app)
     redis_client.init_app(app)
     login_manager.init_app(app)
     dropzone.init_app(app)

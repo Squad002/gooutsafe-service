@@ -4,7 +4,6 @@ from datetime import datetime
 
 from .fixtures import app, client, db
 from . import helpers
-from monolith.models import User
 
 
 def test_create_user_view_is_available(client):
@@ -17,7 +16,7 @@ def test_create_user_view(client, db):
     helpers.create_user(client)
 
     res = get_user_by_id(1)
-    
+
     assert res["email"] == "mariobrown@gmail.com"
     assert res["firstname"] == "mario"
     assert res["lastname"] == "brown"

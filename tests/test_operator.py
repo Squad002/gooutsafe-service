@@ -1,27 +1,22 @@
 from .fixtures import app, client, db
-from monolith.models import Operator
 from monolith.api.operators import get_operator_by_id
 from urllib.parse import urlparse
-import datetime
 
 
 def test_create_operator_view_is_available(client):
     res = client.get("/register/operator")
     assert res.status_code == 200
 
+
 def test_create_operator_view(client, db):
     res = add_operator(client)
-
-    fetched_user = (
-        db.session.query(Operator).filter(Operator.email == "operator@mail.com").first()
-    )
-
     res = get_operator_by_id(1)
-    
+
     assert res["email"] == "operator@mail.com"
     assert res["firstname"] == "operator"
     assert res["lastname"] == "operator"
     # TODO test birthdate
+
 
 """     assert res.status_code == 302
     assert fetched_user["email"] == "operator@mail.com"

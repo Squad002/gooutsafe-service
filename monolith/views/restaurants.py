@@ -1,28 +1,11 @@
 from flask.globals import session
 from flask.helpers import flash
 from flask import Blueprint, redirect, render_template, request, url_for, abort
-from werkzeug.datastructures import MultiDict, FileStorage
-from monolith import db
-from monolith.models import (
-    Restaurant,
-    Precautions,
-    RestaurantsPrecautions,
-    Table,
-    User,
-    Booking,
-    Mark,
-    Operator,
-)
-from monolith.models.menu import Menu, Food, FoodCategory
-from monolith.models.table import Table
-from monolith.api.restaurants import register_restaurant, operator_restaurants_list, get_restaurant_by_id, register_review, get_restaurants, get_restaurants_elastic
-from monolith.api.menus import register_menu, menu_sheet
-from monolith.api.tables import register_table, tables_list, patch_table, remove_table
-from monolith.api.users import get_user_by_id
 from monolith.services.auth import (
     operator_required,
     user_required,
 )
+from monolith import api
 from flask_login import current_user, login_required
 from monolith.services.forms import (
     CreateRestaurantForm,
@@ -32,7 +15,7 @@ from monolith.services.forms import (
     ConfirmBookingForm,
     ChooseReservationData,
 )
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta
 from sqlalchemy import func
 from flask_login import current_user
 from werkzeug.utils import secure_filename
@@ -56,12 +39,11 @@ def _restaurants(message=""):
     if request.args.get("q"):
         query = request.args.get("q")
         session["previous_search"] = query
-        allrestaurants = get_restaurants_elastic(query=query)
+        allrestaurants = api.get_restaurants_elastic(query=query)
         logger.info(f"Searching for {query}")
     else:        
-        allrestaurants = get_restaurants()
+        allrestaurants = api.get_restaurants()
         
-    images_path_dict = {}
     for el in allrestaurants:
         # print(el)
         path = "./monolith/static/uploads/" + str(el["id"])
@@ -74,7 +56,6 @@ def _restaurants(message=""):
         "restaurants.html",
         message=message,
         restaurants=allrestaurants,
-        paths=images_path_dict,
         base_url=request.base_url,
         operator_restaurants=False,
     )
@@ -84,7 +65,7 @@ def _restaurants(message=""):
 @login_required
 @operator_required
 def operator_restaurants(message=""):
-    operator_restaurants = operator_restaurants_list(current_user.id)
+    operator_restaurants = api.operator_restaurants_list(current_user.id)
     return render_template(
         "restaurants.html",
         message=message,
@@ -97,7 +78,7 @@ def operator_restaurants(message=""):
 
 @restaurants.route("/restaurants/<restaurant_id>", methods=["GET", "POST"])
 def restaurant_sheet(restaurant_id):
-    restaurant = get_restaurant_by_id(restaurant_id)
+    restaurant = api.get_restaurant_by_id(restaurant_id)
 
     if restaurant is None:
         abort(404)
@@ -110,7 +91,7 @@ def restaurant_sheet(restaurant_id):
     reviews = restaurant["reviews"]
     form = ReviewForm()
     for review in reviews:
-        user = get_user_by_id(review["user_id"])
+        user = api.get_user_by_id(review["user_id"])
         if user:
             review["name"] = user["firstname"]
 
@@ -128,7 +109,7 @@ def restaurant_sheet(restaurant_id):
                     "user_id" : current_user.id,
                     "restaurant_id" : int(restaurant_id)
                 }
-                status = register_review(review)
+                status = api.register_review(review)
                 # Check if the user already did a review
                 if status == 409:
                     flash("You already reviewed this restaraunt")
@@ -173,7 +154,7 @@ def book_table_form(restaurant_id):
 
     form = CreateBookingDateHourForm()
     max_table_seats = api.max_table_seats(restaurant_id)  # Take max seats from tables of restaurant_id
-    restaurant = get_restaurant_by_id(restaurant_id)
+    restaurant = api.get_restaurant_by_id(restaurant_id)
     time = []
     range_hour = restaurant["time_of_stay"]
     opening_hour = restaurant["opening_hours"] * 60
@@ -282,32 +263,32 @@ def confirm_booking(restaurant_id):
 
 
 def send_booking_confirmation_mail(booking_number):
-    bookings = (
-        db.session.query(Booking).filter(
-            Booking.booking_number == booking_number).all()
-    )
-    first_user = None
+    pass
+    # bookings = api.get_booking_by_id(booking_number)
+    # first_user = None
 
-    for i in range(0, len(bookings)):
-        booking = bookings[i]
-        user = booking.user
-        booking_date = booking.start_booking.strftime("%d %b %Y, %H:%M")
-        restaurant = booking.table.restaurant.name
+    # for i in range(0, len(bookings)):
+    #     booking = bookings[i]
+    #     user = booking["user_id"]
+    #     booking_date = booking["start_booking"].strftime("%d %b %Y, %H:%M")
+    #     restaurant = booking.table.restaurant.name
+    #     restaurant = api.get_r
 
-        if i == 0:
-            first_user = user
-            # Send mail to the person that booked
-            mail_message = f"Hey {user.firstname}!\nThe booking at {restaurant} in date {booking_date} is confirmed.\nHave a safe meal!\n\nThe team of GoOutSafe"
-        else:
-            # Send mail to the people that have been booked by the first person
-            mail_message = f"Hey {user.firstname}!\nYour friend {first_user.firstname} booked at {restaurant} in date {booking_date}.\nHave a safe meal!\n\nThe team of GoOutSafe"
+    #     if i == 0:
+    #         first_user = user
+    #         # Send mail to the person that booked
+    #         mail_message = f"Hey {user.firstname}!\nThe booking at {restaurant} in date {booking_date} is confirmed.\nHave a safe meal!\n\nThe team of GoOutSafe"
+    #     else:
+    #         # Send mail to the people that have been booked by the first person
+    #         mail_message = f"Hey {user.firstname}!\nYour friend {first_user.firstname} booked at {restaurant} in date {booking_date}.\nHave a safe meal!\n\nThe team of GoOutSafe"
 
-        send_email(
-            f"Booking at {restaurant} has been confirmed!",
-            [user.email],
-            mail_message,
-            mail_message,
-        )
+    #     # TODO CALL celery one day
+    #     # send_email(
+    #     #     f"Booking at {restaurant} has been confirmed!",
+    #     #     [user.email],
+    #     #     mail_message,
+    #     #     mail_message,
+    #     # )
 
 
 def validate_image(stream):
@@ -323,7 +304,7 @@ def validate_image(stream):
 @login_required
 @operator_required
 def handle_upload(restaurant_id):
-    restaurant = get_restaurant_by_id(int(restaurant_id))
+    restaurant = api.get_restaurant_by_id(int(restaurant_id))
 
     if restaurant is None:
         abort(404)
@@ -365,7 +346,7 @@ def create_restaurant():
                 "time_of_stay": int(form.time_of_stay.data)
             }
 
-            status = register_restaurant(new_restaurant)
+            status = api.register_restaurant(new_restaurant)
             if status == 201:
                 return redirect("/restaurants/mine")
             else:
@@ -385,7 +366,7 @@ def create_menu(restaurant_id):
     zipped = None
     menu_name = ""
 
-    res = get_restaurant_by_id(restaurant_id)
+    res = api.get_restaurant_by_id(restaurant_id)
 
     if res == None:
         abort(404)
@@ -466,7 +447,7 @@ def create_menu(restaurant_id):
                     status = 200
 
             if status == 200:
-                status = register_menu(menu)
+                status = api.register_menu(menu)
                 if status == 201:
                     return redirect("/restaurants/" + str(restaurant_id))
                 else:
@@ -503,7 +484,7 @@ def create_menu(restaurant_id):
     "/restaurants/<restaurant_id>/menus/show/<menu_id>", methods=["GET", "POST"]
 )
 def show_menu(restaurant_id, menu_id):
-    menu = menu_sheet(menu_id)
+    menu = api.menu_sheet(menu_id)
 
     if menu is None:
         abort(404)
@@ -515,7 +496,7 @@ def show_menu(restaurant_id, menu_id):
 @login_required
 @operator_required
 def _tables(restaurant_id):
-    res = get_restaurant_by_id(restaurant_id)
+    res = api.get_restaurant_by_id(restaurant_id)
     status = 200
     if res == None:
         abort(404)
@@ -523,7 +504,7 @@ def _tables(restaurant_id):
     if res["operator_id"] != current_user.id:
         abort(403)    
 
-    alltables = tables_list(restaurant_id)
+    alltables = api.tables_list(restaurant_id)
 
     print(alltables)
     return (
@@ -542,7 +523,7 @@ def _tables(restaurant_id):
 def create_table(restaurant_id):
     status = 200
     form = CreateTableForm()
-    res = get_restaurant_by_id(restaurant_id)
+    res = api.get_restaurant_by_id(restaurant_id)
 
     if res == None:
         abort(404)
@@ -558,7 +539,7 @@ def create_table(restaurant_id):
                 "restaurant_id" : int(restaurant_id)
             }
 
-            status = register_table(new_table)
+            status = api.register_table(new_table)
             if status == 201:
                 return redirect("/restaurants/" + restaurant_id + "/tables")
             else:
@@ -576,7 +557,7 @@ def create_table(restaurant_id):
 @login_required
 @operator_required
 def edit_table(restaurant_id, table_id):
-    res = get_restaurant_by_id(restaurant_id)
+    res = api.get_restaurant_by_id(restaurant_id)
     status = 200
     if res == None:
         abort(404)
@@ -593,7 +574,7 @@ def edit_table(restaurant_id, table_id):
                 "seats" : form.seats.data
             }
 
-            status = patch_table(table, int(table_id))
+            status = api.patch_table(table, int(table_id))
             if status == 204:
                 return redirect("/restaurants/" + restaurant_id + "/tables")
             elif status == 400:
@@ -619,7 +600,7 @@ def edit_table(restaurant_id, table_id):
 @login_required
 @operator_required
 def delete_table(restaurant_id, table_id):
-    res = get_restaurant_by_id(restaurant_id)
+    res = api.get_restaurant_by_id(restaurant_id)
 
     if res == None:
         abort(404)
@@ -627,7 +608,7 @@ def delete_table(restaurant_id, table_id):
     if res["operator_id"] != current_user.id:
         abort(403)
 
-    status = remove_table(table_id)
+    status = api.remove_table(table_id)
 
     if status == 204:
         return redirect("/restaurants/" + restaurant_id + "/tables"), status

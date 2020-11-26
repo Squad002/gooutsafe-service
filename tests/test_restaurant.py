@@ -1,15 +1,11 @@
 from .fixtures import app, client, db
 from . import helpers
 from .helpers import restaurant
-from monolith.models import (
-    Restaurant,
-    Table,
-    RestaurantsPrecautions,
-    Precautions,
-    Booking,
+from monolith.api.restaurants import (
+    get_restaurant_by_id,
+    operator_restaurants_list,
+    get_restaurants,
 )
-from monolith.models.menu import Menu, Food, MenuItems
-from monolith.api.restaurants import get_restaurant_by_id, operator_restaurants_list, get_restaurants
 from monolith.api.tables import get_table_by_id, tables_list
 from monolith.api.menus import menu_sheet
 from urllib.parse import urlparse
@@ -235,7 +231,7 @@ def test_create_table(client, db):
     assert res.status_code == 302
 
     fetched_table = get_table_by_id(1)
-    
+
     assert fetched_table["name"] == "A10"
     assert fetched_table["seats"] == 10
     assert urlparse(res.location).path == "/restaurants/1/tables"
@@ -597,7 +593,7 @@ def test_operator_restaurant(client, db):
 
     res = helpers.operator_restaurants(client)
     op_restaurants = operator_restaurants_list(1)
-    
+
     assert res.status_code == 200
     for rest in op_restaurants:
         assert bytes(rest["name"], "utf-8") in res.data
@@ -660,8 +656,6 @@ def test_restaurants_logged(client, db):
     assert res.status_code == 200
     for rest in restaurants:
         assert bytes(rest["name"], "utf-8") in res.data
-
-
 
 
 def test_restaurants_notlogged(client, db):

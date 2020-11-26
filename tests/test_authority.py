@@ -1,5 +1,4 @@
 from .fixtures import app, client, db
-from monolith.models import HealthAuthority
 from monolith import api
 
 from urllib.parse import urlparse

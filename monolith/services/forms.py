@@ -1,11 +1,11 @@
 from wtforms.fields.html5 import DateField, EmailField, IntegerField
 from wtforms import widgets, validators, SubmitField, SelectMultipleField
 from flask_wtf import FlaskForm
-from monolith import db
 import wtforms as f
 from wtforms.validators import DataRequired, Length, NumberRange, Email
 from datetime import date
 from wtforms.fields import FormField, FieldList
+
 
 class LoginForm(FlaskForm):
     email = f.StringField("Email", validators=[DataRequired()])
@@ -99,8 +99,7 @@ class CreateRestaurantForm(FlaskForm):
     phonenumber = f.IntegerField("Phone", validators=[DataRequired()])
     time_of_stay = f.RadioField(
         "Time of stay",
-        choices=[(30, "30 minutes"),
-                 (90, "1:30 hour"), (180, "3 hours")],
+        choices=[(30, "30 minutes"), (90, "1:30 hour"), (180, "3 hours")],
         validators=[DataRequired()],
     )
     opening_hours = f.IntegerField(
@@ -112,22 +111,29 @@ class CreateRestaurantForm(FlaskForm):
         validators=[DataRequired(), NumberRange(0, 24, "Not a valid hour")],
     )
     cuisine_type = f.SelectField(
-        "Cuisine type", choices=[
-            ('ETHNIC', 'Ethnic'),
-            ('FAST_FOOD', 'Fast Food'),
-            ('PUB', 'Pub')
-        ], validators=[DataRequired()]
+        "Cuisine type",
+        choices=[("ETHNIC", "Ethnic"), ("FAST_FOOD", "Fast Food"), ("PUB", "Pub")],
+        validators=[DataRequired()],
     )
 
     precautions = [
         ("Amuchina", "Amuchina"),
         ("Social distancing", "Social distancing"),
         ("Disposable menu", "Disposable menu"),
-        ("Personnel required to wash hands regularly", "Personnel required to wash hands regularly"),
-        ("Obligatory masks for staff in public areas", "Obligatory masks for staff in public areas"),
-        ("Tables sanitized at the end of each meal", "Tables sanitized at the end of each meal")
+        (
+            "Personnel required to wash hands regularly",
+            "Personnel required to wash hands regularly",
+        ),
+        (
+            "Obligatory masks for staff in public areas",
+            "Obligatory masks for staff in public areas",
+        ),
+        (
+            "Tables sanitized at the end of each meal",
+            "Tables sanitized at the end of each meal",
+        ),
     ]
-    prec_measures = MultiCheckboxField('Precautions', choices=precautions)
+    prec_measures = MultiCheckboxField("Precautions", choices=precautions)
 
     display = [
         "name",
@@ -257,8 +263,7 @@ class ChangePasswordForm(FlaskForm):
         label="New password",
         validators=[
             DataRequired(),
-            validators.EqualTo("password_confirm",
-                               message="Passwords must match"),
+            validators.EqualTo("password_confirm", message="Passwords must match"),
         ],
     )
     password_confirm = f.PasswordField(
@@ -280,8 +285,7 @@ class ChangeAnagraphicForm(FlaskForm):
     password = f.PasswordField(
         label="Type your password here to confirm", validators=[DataRequired()]
     )
-    display = ["firstname", "lastname",
-               "fiscalcode", "dateofbirth", "password"]
+    display = ["firstname", "lastname", "fiscalcode", "dateofbirth", "password"]
 
 
 class ChangeContactForm(FlaskForm):

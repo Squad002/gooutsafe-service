@@ -16,7 +16,7 @@ from monolith.services.forms import (
 
 me = Blueprint("me", __name__)
 
-from monolith.services.api import get_operator_by_id, get_user_by_id
+from monolith import api
 
 
 @me.route("/me")
@@ -25,10 +25,10 @@ def profile():
     if session["role"] == "authority":
         return redirect("/")
     elif session["role"] == "user":
-        user = get_user_by_id(current_user.id)
+        user = api.get_user_by_id(current_user.id)
         return render_template("profile.html", user=user)
     elif session["role"] == "operator":
-        user = get_operator_by_id(current_user.id)
+        user = api.get_operator_by_id(current_user.id)
         return render_template("profile.html", user=user)
 
 

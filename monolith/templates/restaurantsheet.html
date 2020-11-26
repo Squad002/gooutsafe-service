@@ -162,16 +162,20 @@
 <section>
     <div class="ui medium comments">
         <div class="comment">
+            <a class="avatar">
+                <img loading="lazy" src={{ review['avatar_link'] }}>
+            </a>
             <div class="content">
-                <div class="author">{{ review.firstname }}</div>
+                <div class="author">{{ review['name'] }}</div>
                 <div class="metadata">
+                    <div class="date">{{ review['created'] }}</div>
                     <div class="rating">
                         <i class="star icon"></i>
-                        {{ review.rating }}
+                        {{ review['rating'] }}
                     </div>
                 </div>
                 <div class="text">
-                    {{ review.message }}
+                    {{ review['message'] }}
                 </div>
             </div>
         </div>

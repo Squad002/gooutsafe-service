@@ -57,7 +57,7 @@
             {%endif%}
             {% if not booking[0]["checkin"] %}
                 <td>
-                    <form method="POST" action="{{base_url}}/delete/{{booking[0]['id']}}">
+                    <form method="POST" action="{{base_url}}/delete/{{booking[0]['booking_number']}}">
                         <button>Delete</button>
                     </form>
                 </td>

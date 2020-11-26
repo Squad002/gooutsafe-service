@@ -1,4 +1,4 @@
-from ..fixtures import app, db, client
+from ..fixtures import app, client
 from .. import helpers
 from ..data import booking_people, user2, user3, table2
 from monolith.models import Booking
@@ -16,7 +16,7 @@ def test_ha_should_access_own_trace_page(client):
     assert res.status_code == 200
 
 
-def test_ha_should_trace_through_user_customer_same_time(client, db):
+def test_ha_should_trace_through_user_customer_same_time(client):
     # Create restaurant
     helpers.create_operator(client)
     helpers.login_operator(client)

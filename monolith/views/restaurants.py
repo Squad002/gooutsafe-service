@@ -32,7 +32,6 @@ from monolith.services.forms import (
     ConfirmBookingForm,
     ChooseReservationData,
 )
-from ..controllers import restaurant
 from datetime import date, timedelta, datetime
 from sqlalchemy import func
 from flask_login import current_user

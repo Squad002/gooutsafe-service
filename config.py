@@ -62,12 +62,6 @@ class Config:
 
     REDIS_URL = os.environ.get("REDIS_URL") or "redis://:password@localhost:6379/1"
 
-    CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL") or "redis://redis:6379/0"
-    CELERY_RESULT_BACKEND = (
-        os.environ.get("CELERY_RESULT_BACKEND") or "redis://redis:6379/0"
-    )
-    CELERY_TASKS = ["monolith.services.background.tasks"]
-
     ELASTICSEARCH_URL = os.environ.get("ELASTICSEARCH_URL")
 
     DEBUG_TB_INTERCEPT_REDIRECTS = False
@@ -88,7 +82,9 @@ class Config:
     # Services
     URL_API_USER = os.environ.get("URL_API_USER") or "http://localhost:5001/"
     URL_API_BOOKING = os.environ.get("URL_API_BOOKING") or "http://localhost:5002/"
-    URL_API_RESTAURANT = os.environ.get("URL_API_RESTAURANT") or "http://localhost:5003/"
+    URL_API_RESTAURANT = (
+        os.environ.get("URL_API_RESTAURANT") or "http://localhost:5003/"
+    )
     READ_TIMEOUT = os.environ.get("READ_TIMEOUT") or 3.05
     WRITE_TIMEOUT = os.environ.get("WRITE_TIMEOUT") or 9.1
 

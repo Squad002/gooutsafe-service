@@ -5,11 +5,9 @@ from flask_mail import Mail
 from flask_dropzone import Dropzone
 from flask_redis import FlaskRedis
 
-from config import config, Config
-from celery import Celery
+from config import config
 from elasticsearch import Elasticsearch
 
-import pybreaker
 
 # Debug
 import flask_profiler
@@ -19,13 +17,6 @@ login_manager = LoginManager()
 mail = Mail()
 redis_client = FlaskRedis()
 dropzone = Dropzone()
-
-celery = Celery(
-    __name__,
-    broker=Config.CELERY_BROKER_URL,
-    include=["monolith.services.background.tasks"],
-)
-celery.autodiscover_tasks(["monolith.services.background.tasks"], force=True)
 
 
 def create_app(config_name, updated_variables=None):
@@ -53,7 +44,6 @@ def create_app(config_name, updated_variables=None):
         app.register_error_handler(handler[0], handler[1])
 
     # Services
-    celery.conf.update(app.config)
     es_url = app.config["ELASTICSEARCH_URL"]
     app.elasticsearch = Elasticsearch([es_url]) if es_url else None
 

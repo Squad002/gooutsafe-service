@@ -11,5 +11,4 @@ while true; do
     sleep 5
 done
 
-celery -A gooutsafe.celery worker -l DEBUG -E -B &
 exec gunicorn -b 0.0.0.0:5000 --access-logfile - --error-logfile - gooutsafe:app 

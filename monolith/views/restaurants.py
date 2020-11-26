@@ -35,7 +35,6 @@ from monolith.services.forms import (
 from datetime import date, timedelta, datetime
 from sqlalchemy import func
 from flask_login import current_user
-from monolith.services.background.tasks import send_email
 from werkzeug.utils import secure_filename
 from monolith import api
 from flask_login import current_user

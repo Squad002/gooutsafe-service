@@ -55,8 +55,6 @@ def test_user_should_create_review(client, db):
 #     res = create_review(client, rating=2)
 #     helpers.logout(client)
 
-#     from monolith.services.background.tasks import compute_restaurants_rating_average
-
 #     compute_restaurants_rating_average()
 
 #     assert res.status_code == 200
@@ -71,7 +69,6 @@ def test_user_should_create_review_if_already_did(client, db):
 
     helpers.create_user(client)
     helpers.login_user(client)
-   
 
     helpers.login_user(client)
     create_review(client)
@@ -88,7 +85,6 @@ def test_user_should_not_create_review_when_message_is_less_than_30_character(
     helpers.login_operator(client)
     helpers.create_restaurant(client)
     helpers.logout(client)
-
 
     helpers.create_user(client)
     helpers.login_user(client)
@@ -138,7 +134,7 @@ def test_user_should_not_create_review_when_message_is_less_than_30_character(
 
 def test_authority_should_not_see_the_review_form(client, db):
     helpers.create_health_authority(client)
-    
+
     helpers.create_operator(client)
     helpers.login_operator(client)
     helpers.create_restaurant(client)

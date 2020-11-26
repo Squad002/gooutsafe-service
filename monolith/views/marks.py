@@ -6,7 +6,6 @@ from monolith import db
 from monolith.models import User
 from monolith.services.auth import current_user, authority_required
 from monolith.services.forms import AuthorityIdentifyForm
-from monolith.services.background import tasks
 from monolith import api
 
 from config import (

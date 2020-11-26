@@ -13,8 +13,6 @@
     python -m smtpd -n -c DebuggingServer localhost:8025
     # Start Redis
     docker run --name redis -p 6379:6379 redis
-    # Start Celery
-    celery -A gooutsafe.celery worker -l DEBUG -E -B
     # Start Elasticsearch
     docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:7.10.0
     
@@ -24,7 +22,7 @@
     flask run
 
 ### Docker Image
-    docker build -t gooutsafe:latest . 
+    docker build -t gooutsafe/entrypoint:latest . 
 
 To run with settings
 
